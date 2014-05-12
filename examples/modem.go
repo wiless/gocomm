@@ -65,23 +65,12 @@ func main() {
 
 	qpskModem := new(Modem)
 	qpskModem.init(2)
-	fmt.Printf("%v", qpskModem)
+	fmt.Printf("\n%v", qpskModem)
 	fmt.Printf("\n%f", qpskModem.constellation)
 
 	qpsk16Modem := new(Modem)
 	qpsk16Modem.init(4)
-	fmt.Printf("%v", qpsk16Modem)
+	fmt.Printf("\n%v", qpsk16Modem)
 	fmt.Printf("\n%f", qpsk16Modem.constellation)
 
-	// 	fmt.Printf("\n%v",simple.constellation)
-	//
-	//
-	// 	simple.init(4)
-	// 	fmt.Printf("\n%v",simple)
-	// 	fmt.Printf("\n%v",simple.constellation)
-	//
-	//
-	// 	simple.init(6)
-	// 	fmt.Printf("\n%v",simple)
-	// 	fmt.Printf("\n%v",simple.constellation)
 }
