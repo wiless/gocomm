@@ -1,5 +1,5 @@
 package gocomm
-
+// what is this code about 
 import (
 	"fmt"
 	"math"
