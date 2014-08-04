@@ -7,6 +7,7 @@ import (
 )
 
 type PinInfo struct {
+	Id       int
 	Name     string
 	Desc     string
 	DataType reflect.Type
@@ -15,6 +16,7 @@ type PinInfo struct {
 }
 
 type ModuleInfo struct {
+	Id       int
 	Name     string
 	Desc     string
 	InPins   []int
@@ -27,6 +29,10 @@ type Chip interface {
 	InPinCount() int
 	OutPinCount() int
 	PinByName(string) PinInfo
+	PinByID(int) PinInfo
+
+	ModuleByName(string) ModuleInfo
+
 	PinIn(int) PinInfo
 	PinOut(int) PinInfo
 	ModulesCount() int

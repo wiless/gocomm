@@ -42,6 +42,12 @@ func (s *BitSource) GenBit(bitChannel gocomm.BitChannel) {
 	fmt.Println("\ntxbits=", bits)
 	for i := 0; i < s.Size(); i++ {
 		chdata.Ch = bits[i]
+		if i <= 5 {
+			chdata.Message = "BYPASS"
+		} else {
+			chdata.Message = ""
+		}
+
 		// if i == (s.Size() - 1) {
 		// 	chdata.MaxExpected += 6
 		// 	fmt.Printf("\n extra being pushed, ...")
@@ -94,6 +100,10 @@ func RandChars(size int) []uint8 {
 
 	}
 	return result
+}
+
+func (m BitSource) ModuleByName(mname string) chipset.ModuleInfo {
+	return m.Modules[mname]
 }
 
 func (m BitSource) PinByName(pinname string) chipset.PinInfo {
@@ -175,12 +185,30 @@ func (b BitSource) OutPinCount() int {
 	return 1
 }
 
-func (b BitSource) PinIn(pid int) chipset.PinInfo {
-	return b.Pins[b.PinNames[pid]]
+func (m BitSource) PinIn(pid int) chipset.PinInfo {
+	if pid >= m.InPinCount() {
+		fmt.Printf("%d > No of Input Pins %d", pid, m.InPinCount())
+		var result chipset.PinInfo
+		result.Id = -1
+		return result
+	}
+
+	return m.Pins[m.PinNames[pid]]
 
 }
-func (b BitSource) PinOut(pid int) chipset.PinInfo {
-	return b.Pins[b.PinNames[pid+b.InPinCount()]]
+func (m BitSource) PinByID(pid int) chipset.PinInfo {
+
+	return m.Pins[m.PinNames[pid]]
+}
+
+func (m BitSource) PinOut(pid int) chipset.PinInfo {
+	if pid >= m.OutPinCount() {
+		fmt.Printf("%d > No of Output Pins %d", pid, m.OutPinCount())
+		var result chipset.PinInfo
+		result.Id = -1
+		return result
+	}
+	return m.Pins[m.PinNames[pid+m.InPinCount()]]
 }
 func (b BitSource) ModulesCount() int {
 	return 1
@@ -212,10 +240,11 @@ func (m *BitSource) InitModules() {
 
 		switch minfo.Name {
 		case "GenBit":
+			minfo.Id = 0
 			minfo.Desc = "Generates Uniformly distributed bits 0 and 1 at output pin 'bitOut' "
 			minfo.InPins = []int{}
-			minfo.OutPins = []int{0}
-			method := reflect.ValueOf(m).MethodByName("SayHello")
+			minfo.OutPins = []int{m.PinByName("bitOut").Id}
+			method := reflect.ValueOf(m).MethodByName("GenBit")
 			minfo.Function = method
 			// case "demodulate":
 			// 	minfo.InPins = []int{1}
@@ -255,6 +284,7 @@ func (m *BitSource) InitPins() {
 	var dummypin chipset.PinInfo
 	/// All output pins
 	dummypin = m.Pins["bitOut"]
+	dummypin.Id = 0
 	dummypin.Desc = "Output Pin where bits are written"
 	dummypin.DataType = reflect.TypeOf(testch)
 	dummypin.CreateBitChannel()

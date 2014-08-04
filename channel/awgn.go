@@ -11,8 +11,8 @@ import (
 )
 
 type ChannelEmulator struct {
-	noiseDb float64
-
+	noise float64
+	Mean  float64
 	/// Chipset Related
 	name          string
 	isInitialized bool
@@ -22,16 +22,21 @@ type ChannelEmulator struct {
 	ModuleNames   map[int]string
 }
 
+func (c *ChannelEmulator) SetNoise(mean, variance float64) {
+	c.Mean = mean
+	c.noise = variance
+}
+
 func (m *ChannelEmulator) AWGNChannel(dummy gocomm.Complex128Channel) {
-	fmt.Printf("\n Noise ready to Input %v", dummy)
+	// fmt.Printf("\n Noise ready to Input %v", dummy)
 	outCH := m.Pins["symbolOut"].Channel.(gocomm.Complex128Channel)
-	fmt.Printf("\n Output ready to Output %v", outCH)
+	// fmt.Printf("\n Output ready to Output %v", outCH)
 	var chdataOut gocomm.SComplex128Channel
 	var chdataIn gocomm.SComplex128Channel
 	samples := 1
 	// result := make([]complex64, samples)
-	var StdDev float64 = math.Sqrt(math.Pow(10, m.noiseDb*.1))
-	var Mean float64 = 0
+	var StdDev float64 = math.Sqrt(m.noise)
+	var Mean float64 = m.Mean
 	var noise complex128
 
 	for i := 0; i < samples; i++ {
@@ -39,13 +44,19 @@ func (m *ChannelEmulator) AWGNChannel(dummy gocomm.Complex128Channel) {
 		chdataIn = <-dummy
 		chdataOut.MaxExpected = chdataIn.MaxExpected
 		samples = chdataIn.MaxExpected
-		fmt.Printf("\nAWGN expects %d samples @ %v", samples, dummy)
-		if Mean != 0 && StdDev != 1 {
-			noise = complex128(complex(rand.NormFloat64()*StdDev+Mean, rand.NormFloat64()*StdDev+Mean))
+		// fmt.Printf("\nAWGN expects %d samples @ %v", samples, dummy)
+		chdataOut.Message = chdataIn.Message
+		if chdataIn.Message != "BYPASS" {
+			if Mean != 0 && StdDev != 1 {
+				noise = complex128(complex(rand.NormFloat64()*StdDev+Mean, rand.NormFloat64()*StdDev+Mean))
+			} else {
+				noise = complex128(complex(rand.NormFloat64(), rand.NormFloat64()))
+			}
+			chdataOut.Ch = chdataIn.Ch + noise
+
 		} else {
-			noise = complex128(complex(rand.NormFloat64(), rand.NormFloat64()))
+			chdataOut.Ch = chdataIn.Ch
 		}
-		chdataOut.Ch = chdataIn.Ch + noise
 		outCH <- chdataOut
 	}
 
@@ -119,16 +130,19 @@ func (m *ChannelEmulator) InitModules() {
 
 		switch minfo.Name {
 		case "fadingChannel":
+			minfo.Id = 0
 			minfo.Desc = "This emulates a 1-tap fading (multiplicative) channel"
-			minfo.InPins = []int{0}
-			minfo.OutPins = []int{0}
+			minfo.InPins = []int{m.PinByName("symbolIn").Id}
+			minfo.OutPins = []int{m.PinByName("symbolOut").Id}
 			method := reflect.ValueOf(m).MethodByName("FadingChannel")
 			minfo.Function = method
 
 		case "awgn":
+			minfo.Id = 1
 			minfo.Desc = "This emulates additive white noise to the input signal "
-			minfo.InPins = []int{0}
-			minfo.OutPins = []int{0}
+
+			minfo.InPins = []int{m.PinByName("symbolIn").Id}
+			minfo.OutPins = []int{m.PinByName("symbolOut").Id}
 			method := reflect.ValueOf(m).MethodByName("AWGNChannel")
 			minfo.Function = method
 
@@ -167,11 +181,13 @@ func (m *ChannelEmulator) InitPins() {
 
 	/// all Input Pins
 	dummypin = m.Pins["symbolIn"]
+	dummypin.Id = 0
 	dummypin.DataType = reflect.TypeOf(testcch)
 	m.Pins["symbolIn"] = dummypin
 
 	/// All output pins
 	dummypin = m.Pins["symbolOut"]
+	dummypin.Id = 1
 	dummypin.DataType = reflect.TypeOf(testcch)
 	dummypin.CreateComplex128Channel()
 	m.Pins["symbolOut"] = dummypin
@@ -208,23 +224,41 @@ func (m ChannelEmulator) Pin(pid int) chipset.PinInfo {
 
 func (m ChannelEmulator) PinByName(pinname string) chipset.PinInfo {
 	return m.Pins[pinname]
+
+}
+
+func (m ChannelEmulator) PinByID(pid int) chipset.PinInfo {
+
+	return m.Pins[m.PinNames[pid]]
 }
 
 func (m ChannelEmulator) PinIn(pid int) chipset.PinInfo {
+
+	if pid >= m.InPinCount() {
+		fmt.Printf("%d > No of Input Pins %d", pid, m.InPinCount())
+		var result chipset.PinInfo
+		result.Id = -1
+		return result
+	}
 
 	return m.Pins[m.PinNames[pid]]
 
 }
 func (m ChannelEmulator) PinOut(pid int) chipset.PinInfo {
+	if pid >= m.OutPinCount() {
+		fmt.Printf("%d > No of Output Pins %d", pid, m.OutPinCount())
+		var result chipset.PinInfo
+		result.Id = -1
+		return result
+	}
 	return m.Pins[m.PinNames[pid+m.InPinCount()]]
-
 }
 
 // Has Modulator and Demodulator
 func (m ChannelEmulator) ModulesCount() int {
 	return 2
 }
-func (m *ChannelEmulator) ModuleByName(mname string) chipset.ModuleInfo {
+func (m ChannelEmulator) ModuleByName(mname string) chipset.ModuleInfo {
 	return m.Modules[mname]
 }
 

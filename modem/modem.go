@@ -131,6 +131,7 @@ func (m *Modem) ModulateBlock(OutBlockSize int, bitchan gocomm.BitChannel, symbo
 		for i := 0; i < length; i++ {
 			chdataIn = <-bitchan
 			chdataOut.MaxExpected = chdataIn.MaxExpected / 2
+			chdataOut.Message = chdataIn.Message
 			bits[i] = chdataIn.Ch
 			OutBlockSize = chdataIn.MaxExpected
 
@@ -158,6 +159,7 @@ func (m *Modem) DeModulateBlock(OutBlockSize int, InCH gocomm.Complex128Channel,
 
 		chdataOut.Ch = result
 		chdataOut.MaxExpected = OutBlockSize
+		chdataOut.Message = chdataIn.Message
 		// fmt.Printf("\n Writing demod bits to  %v ", outCH.Ch)
 		outCH <- chdataOut
 	}
@@ -383,11 +385,28 @@ func (m Modem) Pin(pid int) chipset.PinInfo {
 }
 
 func (m Modem) PinIn(pid int) chipset.PinInfo {
+	if pid >= m.InPinCount() {
+		fmt.Printf("%d > No of Input Pins %d", pid, m.InPinCount())
+		var result chipset.PinInfo
+		result.Id = -1
+		return result
+	}
 
 	return m.Pins[m.PinNames[pid]]
 
 }
+func (m Modem) PinByID(pid int) chipset.PinInfo {
+
+	return m.Pins[m.PinNames[pid]]
+}
+
 func (m Modem) PinOut(pid int) chipset.PinInfo {
+	if pid >= m.OutPinCount() {
+		fmt.Printf("%d > No of Output Pins %d", pid, m.OutPinCount())
+		var result chipset.PinInfo
+		result.Id = -1
+		return result
+	}
 	return m.Pins[m.PinNames[pid+m.InPinCount()]]
 
 }
@@ -400,7 +419,7 @@ func (m Modem) PinByName(pinname string) chipset.PinInfo {
 func (m Modem) ModulesCount() int {
 	return 2
 }
-func (m *Modem) ModuleByName(mname string) chipset.ModuleInfo {
+func (m Modem) ModuleByName(mname string) chipset.ModuleInfo {
 	return m.Modules[mname]
 }
 
@@ -464,15 +483,17 @@ func (m *Modem) InitModules() {
 		switch minfo.Name {
 		case "modulate":
 			minfo.Desc = "This modulate modulates the input bits from Inpin 'bitIn' and writes to 'symbolOut' "
-			minfo.InPins = []int{0}
-			minfo.OutPins = []int{0}
+			minfo.Id = 0
+			minfo.InPins = []int{m.PinByName("bitIn").Id}
+			minfo.OutPins = []int{m.PinByName("symbolOut").Id}
 			method := reflect.ValueOf(m).MethodByName("SayModulate")
 			minfo.Function = method
 
 		case "demodulate":
 			minfo.Desc = "This modulate DeModulates the input Symbols from Inpin 'symbolIn' and writes to 'bitOut' "
-			minfo.InPins = []int{1}
-			minfo.OutPins = []int{1}
+			minfo.Id = 1
+			minfo.InPins = []int{m.PinByName("symbolIn").Id}
+			minfo.OutPins = []int{m.PinByName("bitOut").Id}
 			method := reflect.ValueOf(m).MethodByName("SayDemodulate")
 			minfo.Function = method
 
@@ -491,12 +512,14 @@ func (m *Modem) InitPins() {
 	strlist := [4]string{"bitIn", "symbolIn", "symbolOut", "bitOut"}
 	for i := 0; i < totalpins; i++ {
 		m.PinNames[i] = strlist[i]
+
 	}
 
 	for i := 0; i < totalpins; i++ {
 		var pinfo chipset.PinInfo
 		// pinfo.CreateComplex128Channel()
 		pinfo.Name = m.PinNames[i]
+		pinfo.Id = i
 		if i < m.InPinCount() {
 			pinfo.InputPin = true
 		} else {
@@ -513,21 +536,25 @@ func (m *Modem) InitPins() {
 
 	/// all Input Pins
 	dummypin = m.Pins["symbolIn"]
+	dummypin.Id = 1
 	dummypin.DataType = reflect.TypeOf(testcch)
 	m.Pins["symbolIn"] = dummypin
 
 	dummypin = m.Pins["bitIn"]
+	dummypin.Id = 0
 	dummypin.DataType = reflect.TypeOf(testch)
 	m.Pins["bitIn"] = dummypin
 
 	///
 	/// All output pins
 	dummypin = m.Pins["symbolOut"]
+	dummypin.Id = 2
 	dummypin.DataType = reflect.TypeOf(testcch)
 	dummypin.CreateComplex128Channel()
 	m.Pins["symbolOut"] = dummypin
 	// fmt.Printf("\n %v : PinO : %v , Channel : %v", m.Name(), m.Pins["symbolOut"].Name, m.Pins["symbolOut"].Channel)
 	dummypin = m.Pins["bitOut"]
+	dummypin.Id = 3
 	dummypin.DataType = reflect.TypeOf(testcch)
 	dummypin.CreateComplex128Channel()
 	m.Pins["bitOut"] = dummypin
