@@ -46,45 +46,71 @@ func main() {
 	t := time.Now()
 
 	bsrc := new(sources.BitSource)
+	txmodem := modem.NewModem(2)
+	rxmodem := modem.NewModem(2)
+	var chem1, chem2 channel.ChannelEmulator
+
+	/// Initialize each module
 	bsrc.SetSize(N)
 	bsrc.InitializeChip()
 
-	// testmodem1 := sources.BitSource
-	testmodem2 := modem.NewModem(2)
-	demodem := modem.NewModem(2)
+	chem1.InitializeChip()
 
-	var chem channel.ChannelEmulator
-	chem.InitializeChip()
-	chem.SetNoise(0, 2)
+	chem2.InitializeChip()
+	chem2.SetNoise(0, 2)
+
 	// var newwire chipset.Wire
-	var wire1, wire2, wire3 chipset.Wire
+	var chip []chipset.Chip
+	var wire []chipset.Wire
 
-	var chip1, chip2, chip3 chipset.Chip
-	var chip4 chipset.Chip
+	chip = make([]chipset.Chip, 5)
+	wire = make([]chipset.Wire, len(chip)-1)
 
-	bitch := (bsrc.PinByName("bitOut").Channel.(gocomm.BitChannel))
 	// var bitch gocomm.BitChannel
 	// fmt.Printf("\n TYPE OF CHannel is %v", reflect.TypeOf(bitch))
+	chipcnt := 0
 
-	chip1 = bsrc
-	chip2 = testmodem2
-	chip3 = demodem
-	chip4 = chem
+	chip[chipcnt] = bsrc
+	chipcnt++
+	chip[chipcnt] = txmodem
+	chipcnt++
+	chip[chipcnt] = chem1
+	chipcnt++
+	chip[chipcnt] = chem2
+	chipcnt++
+	chip[chipcnt] = rxmodem
+	for i := 0; i < len(wire); i++ {
+		wire[i].Join(chip[i], chip[i+1])
+	}
 
-	wire1.Join(chip1, chip2)
-	wire2.Join(chip2, chip4)
-	wire3.Join(chip4, chip3)
-	go bsrc.GenBit(bitch)
+	modules := [...]string{"genbit", "modulate", "fadingChannel", "awgn", "demodulate"}
+	junctionwire := 2 // @output of chem1
+
 	var success bool
 	var outpin string
-	outpin = chip1.PinByID(chip1.ModuleByName("GenBit").OutPins[0]).Name
-	success, outpin = wire1.ConnectPins(outpin, "modulate")
-	success, outpin = wire2.ConnectPins(outpin, "awgn")
-	success, outpin = wire3.ConnectPins(outpin, "demodulate")
 
+	bitch := (bsrc.PinByName("bitOut").Channel.(gocomm.BitChannel))
+	outpin = chip[0].PinByID(chip[0].ModuleByName(modules[0]).OutPins[0]).Name
+	go bsrc.GenBit(bitch)
+
+	for i := 0; i < len(wire); i++ {
+		fmt.Printf("\n Wire %d ", i)
+		if i == junctionwire {
+			wire[i].Split(2)
+		}
+		success, outpin = wire[i].ConnectPins(outpin, modules[i+1])
+	}
+
+	// success, outpin = wire1.ConnectPins(outpin, "modulate")
+	// success, outpin = wire2.ConnectPins(outpin, "awgn")
+	// success, outpin = wire2.ConnectPins(outpin, "awgn")
+	// success, outpin = wire3.ConnectPins(outpin, "demodulate")
+	go Sink(wire[junctionwire].GetProbe(0))
 	if success {
-		pin := wire3.DestinationChip.PinByName(outpin)
+		lastwire := wire[len(wire)-1]
+		pin := lastwire.DestinationChip.PinByName(lastwire.RecentOutputPinName())
 		Sink(pin)
+
 	}
 
 	return
@@ -166,17 +192,21 @@ func Vector2Sample(uid int, NextSize int, InCH gocomm.Complex128ChannelA, OutCH 
 	close(InCH)
 }
 
-func ChannelDuplexer(NextSize int, InCH gocomm.Complex128Channel, OutCHA []gocomm.Complex128Channel) {
+func ChannelDuplexer(InCH gocomm.Complex128Channel, OutCHA []gocomm.Complex128Channel) {
 	Nchanels := len(OutCHA)
 	var chdataIn gocomm.SComplex128Channel
 	var chdataOut gocomm.SComplex128Channel
-
+	NextSize := 1
 	for cnt := 0; cnt < NextSize; cnt++ {
 		chdataIn = <-InCH
 		data := chdataIn.Ch
+		NextSize = chdataIn.MaxExpected
+
 		// fmt.Printf("%d InputDuplexer : %v ", cnt, data)
 		for i := 0; i < Nchanels; i++ {
 			chdataOut.Ch = data
+			chdataOut.MaxExpected = NextSize
+			chdataOut.Message = chdataIn.Message
 			OutCHA[i] <- chdataOut
 		}
 	}

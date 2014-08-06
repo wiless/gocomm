@@ -1,9 +1,29 @@
 package gocomm
 
+type ChannelDataStruct interface {
+	GetMaxExpected() int
+}
+
 type SBitChannel struct {
 	Ch          uint8
 	MaxExpected int
 	Message     string
+}
+
+func (s SBitChannel) GetMaxExpected() int {
+	return s.MaxExpected
+}
+
+func (s SBitChannelA) GetMaxExpected() int {
+	return s.MaxExpected
+}
+
+func (s SComplex128Channel) GetMaxExpected() int {
+	return s.MaxExpected
+}
+
+func (s SComplex128ChannelA) GetMaxExpected() int {
+	return s.MaxExpected
 }
 
 type SBitChannelA struct {

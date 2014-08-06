@@ -229,7 +229,7 @@ func (m *BitSource) InitModules() {
 	m.Modules = make(map[string]chipset.ModuleInfo, totalModules)
 	m.ModuleNames = make(map[int]string, totalModules)
 	// b := [...]string{"Penn", "Teller"}
-	strlist := [...]string{"GenBit"}
+	strlist := [...]string{"genbit"}
 	for i := 0; i < totalModules; i++ {
 		m.ModuleNames[i] = strlist[i]
 	}
@@ -239,7 +239,7 @@ func (m *BitSource) InitModules() {
 		minfo.Name = m.ModuleNames[i]
 
 		switch minfo.Name {
-		case "GenBit":
+		case "genbit":
 			minfo.Id = 0
 			minfo.Desc = "Generates Uniformly distributed bits 0 and 1 at output pin 'bitOut' "
 			minfo.InPins = []int{}
@@ -285,6 +285,7 @@ func (m *BitSource) InitPins() {
 	/// All output pins
 	dummypin = m.Pins["bitOut"]
 	dummypin.Id = 0
+	dummypin.SourceName = "genbit"
 	dummypin.Desc = "Output Pin where bits are written"
 	dummypin.DataType = reflect.TypeOf(testch)
 	dummypin.CreateBitChannel()

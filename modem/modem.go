@@ -551,10 +551,12 @@ func (m *Modem) InitPins() {
 	dummypin.Id = 2
 	dummypin.DataType = reflect.TypeOf(testcch)
 	dummypin.CreateComplex128Channel()
+	dummypin.SourceName = "modulate"
 	m.Pins["symbolOut"] = dummypin
 	// fmt.Printf("\n %v : PinO : %v , Channel : %v", m.Name(), m.Pins["symbolOut"].Name, m.Pins["symbolOut"].Channel)
 	dummypin = m.Pins["bitOut"]
 	dummypin.Id = 3
+	dummypin.SourceName = "demodulate"
 	dummypin.DataType = reflect.TypeOf(testcch)
 	dummypin.CreateComplex128Channel()
 	m.Pins["bitOut"] = dummypin

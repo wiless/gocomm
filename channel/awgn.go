@@ -62,26 +62,6 @@ func (m *ChannelEmulator) AWGNChannel(dummy gocomm.Complex128Channel) {
 
 }
 
-func GenerateNoise(noiseDb float64, samples int) []complex64 {
-
-	result := make([]complex64, samples)
-	var StdDev float64 = math.Sqrt(math.Pow(10, noiseDb*.1))
-	var Mean float64 = 0
-	if Mean != 0 && StdDev != 1 {
-		for i := 0; i < samples; i++ {
-
-			result[i] = complex64(complex(rand.NormFloat64()*StdDev+Mean, rand.NormFloat64()*StdDev+Mean))
-		}
-	} else {
-		for i := 0; i < samples; i++ {
-			result[i] = complex64(complex(rand.NormFloat64(), rand.NormFloat64()))
-
-		}
-	}
-	return result
-
-}
-
 /// Fading/AWGN Channel that operates on each sample
 func (m *ChannelEmulator) FadingChannel(InCH gocomm.Complex128Channel) {
 	outCH := m.Pins["symbolOut"].Channel.(gocomm.Complex128Channel)
@@ -93,19 +73,23 @@ func (m *ChannelEmulator) FadingChannel(InCH gocomm.Complex128Channel) {
 
 		chdataIn = <-InCH
 		sample := chdataIn.Ch
-
-		/// Do the processing here
-		// gain := 1 //sources.RandNC(1)
-		noise := sources.RandNC(N0)
-		///Fading
-		// psample := sample * gain
-		psample := sample + noise
-		///
+		chdataOut.Message = chdataIn.Message
 		chdataOut.MaxExpected = chdataIn.MaxExpected
-		chdataOut.Ch = psample
+		NextSize = chdataIn.MaxExpected
+
+		var hn complex128
+		if chdataIn.Message == "BYPASS" {
+			hn = 1
+			chdataOut.Ch = sample
+		} else {
+			hn = sources.RandNC(N0)
+			psample := sample * hn
+			chdataOut.Ch = psample
+		}
+
 		outCH <- chdataOut
 	}
-	// close(InCH)
+
 }
 
 /// CHIPSET interface
@@ -140,7 +124,6 @@ func (m *ChannelEmulator) InitModules() {
 		case "awgn":
 			minfo.Id = 1
 			minfo.Desc = "This emulates additive white noise to the input signal "
-
 			minfo.InPins = []int{m.PinByName("symbolIn").Id}
 			minfo.OutPins = []int{m.PinByName("symbolOut").Id}
 			method := reflect.ValueOf(m).MethodByName("AWGNChannel")
@@ -188,6 +171,7 @@ func (m *ChannelEmulator) InitPins() {
 	/// All output pins
 	dummypin = m.Pins["symbolOut"]
 	dummypin.Id = 1
+	dummypin.SourceName = "fadingchannel/awgn"
 	dummypin.DataType = reflect.TypeOf(testcch)
 	dummypin.CreateComplex128Channel()
 	m.Pins["symbolOut"] = dummypin
@@ -198,7 +182,6 @@ func (m *ChannelEmulator) InitializeChip() {
 
 	m.InitPins()
 	m.InitModules()
-
 }
 
 // PinsIn() int
@@ -269,4 +252,24 @@ func (m ChannelEmulator) Module(moduleid int) chipset.ModuleInfo {
 
 func (m ChannelEmulator) Name() string {
 	return "ChannelEmulator"
+}
+
+func GenerateNoise(noiseDb float64, samples int) []complex64 {
+
+	result := make([]complex64, samples)
+	var StdDev float64 = math.Sqrt(math.Pow(10, noiseDb*.1))
+	var Mean float64 = 0
+	if Mean != 0 && StdDev != 1 {
+		for i := 0; i < samples; i++ {
+
+			result[i] = complex64(complex(rand.NormFloat64()*StdDev+Mean, rand.NormFloat64()*StdDev+Mean))
+		}
+	} else {
+		for i := 0; i < samples; i++ {
+			result[i] = complex64(complex(rand.NormFloat64(), rand.NormFloat64()))
+
+		}
+	}
+	return result
+
 }

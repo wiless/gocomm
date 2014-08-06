@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"reflect"
-	// "wiless/gocomm"
+	"wiless/gocomm"
 )
 
 var wireIDCounter int
@@ -12,7 +12,33 @@ var wireIDCounter int
 type Wire struct {
 	SourceChip      Chip
 	DestinationChip Chip
+	recentOutput    string
 	id              int
+	isActive        bool
+	activeMethod    int
+	virtualPin      []PinInfo
+	splits          int
+}
+
+func (w *Wire) GetProbe(freeid int) PinInfo {
+	return w.virtualPin[freeid+1]
+}
+
+func (w *Wire) ProbePin(pid int) PinInfo {
+	if pid > 0 && pid < w.splits {
+		return w.virtualPin[pid]
+	} else {
+		var temp PinInfo
+		return temp
+	}
+}
+
+func (w Wire) GetID() int {
+	return w.id
+}
+
+func (w Wire) RecentOutputPinName() string {
+	return w.recentOutput
 }
 
 type WireError struct {
@@ -35,6 +61,9 @@ func NewWire(SourceChip Chip, DestinationChip Chip) Wire {
 func (w *Wire) Join(SourceChip Chip, DestinationChip Chip) {
 	w.SourceChip = SourceChip
 	w.DestinationChip = DestinationChip
+	w.id = wireIDCounter
+	wireIDCounter++
+	w.splits = 0
 }
 
 func (w *Wire) ConnectAuto(SourceChip Chip, DestinationChip Chip, moduleID int) (success bool, outPinName string) {
@@ -62,7 +91,7 @@ func (w *Wire) ConnectAuto(SourceChip Chip, DestinationChip Chip, moduleID int) 
 }
 
 func (w *Wire) ConnectPins(srcPinName string, moduleName string) (success bool, outPinName string) {
-
+	// fmt.Printf("\n I am %d %v to %v ", w.id, w.SourceChip, w.DestinationChip)
 	success = false
 	outPinName = ""
 	if w.SourceChip == nil && w.DestinationChip == nil {
@@ -82,9 +111,11 @@ func (w *Wire) ConnectPins(srcPinName string, moduleName string) (success bool, 
 		return success, outPinName
 	}
 
-	fmt.Printf("\nWire : Calling ConnectToModule : %v (%v) ,%v (%v)", module.Id, module.Name, srcPin.Id, srcPin.Name)
+	fmt.Printf("\nWire : Connecting %v (%v) to Module : %v (%v)", srcPin.Id, srcPin.Name, module.Id, module.Name)
 
-	return w.ConnectToModule(module.Id, srcPin.Id)
+	success, outPinName = w.ConnectToModule(module.Id, srcPin.Id)
+	w.recentOutput = outPinName
+	return success, outPinName
 	// return success, outPinName
 
 }
@@ -207,7 +238,8 @@ func (w *Wire) JoinPins(pvsChipOut int, nextChipIn int) {
 
 func (w *Wire) ConnectToModule(moduleId int, srcPinId int) (success bool, outPinName string) {
 	moduleName := w.DestinationChip.Module(moduleId).Name
-	srcType := w.SourceChip.PinByID(srcPinId).DataType
+	srcPIN := w.SourceChip.PinByID(srcPinId)
+	srcType := srcPIN.DataType
 	outpins := w.DestinationChip.Module(moduleId).OutPins
 	inpins := w.DestinationChip.Module(moduleId).InPins
 
@@ -238,15 +270,36 @@ func (w *Wire) ConnectToModule(moduleId int, srcPinId int) (success bool, outPin
 		}
 		fmt.Printf("\n===== EXECUTING CHIP %v:%v : O/p = %v @ %v ", (w.DestinationChip).Name(), moduleName, (w.DestinationChip).PinByID(outpins[0]).Name, (w.DestinationChip).PinByID(outpins[0]).Channel)
 
-		in := make([]reflect.Value, nargs)
-		for i := 0; i < len(in); i++ {
-			// in[0] = make()
-			// ch :=
-			in[0] = reflect.ValueOf((w.SourceChip).PinByID(srcPinId).Channel)
+		w.isActive = true
+		w.activeMethod = moduleId
+		// fmt.Printf("\n Checking for splits %v", w.splits)
+		if w.splits > 1 {
+			// fmt.Printf("\n Found SPLIT %v", w.SourceChip.Name())
+			w.virtualPin = make([]PinInfo, w.splits)
+			for i := 0; i < w.splits; i++ {
+				var dummypin PinInfo
+				/// all Input Pins
+				dummypin.Name = "Virtual" + srcPIN.Name
+				dummypin.Id = srcPIN.Id
+				dummypin.DataType = srcPIN.DataType
+				dummypin.CreateChannel()
+				w.virtualPin[i] = dummypin
+			}
+			// fmt.Printf("All virtualpins = %v", w.virtualPin)
+			in := make([]reflect.Value, nargs)
+			for i := 0; i < len(in); i++ {
+				in[i] = reflect.ValueOf(w.virtualPin[0].Channel)
+			}
+			go w.PinCopier(srcPIN.Channel)
+			go w.DestinationChip.Module(moduleId).Function.Call(in)
+		} else {
+			in := make([]reflect.Value, nargs)
+			for i := 0; i < len(in); i++ {
+				in[i] = reflect.ValueOf(w.SourceChip.PinByID(srcPinId).Channel)
+			}
+
+			go w.DestinationChip.Module(moduleId).Function.Call(in)
 		}
-		// fmt.Printf("\n Will pass this argument %v to %v", in[0], moduleName)
-		// (w.DestinationChip)
-		go (w.DestinationChip).Module(moduleId).Function.Call(in)
 		// fmt.Printf("\n After executing")
 		// fmt.Printf("\n SUMMA TEST is available %#v", (w.DestinationChip).PinIn(inpins[0]))
 		success = true
@@ -254,5 +307,131 @@ func (w *Wire) ConnectToModule(moduleId int, srcPinId int) (success bool, outPin
 	} else {
 		fmt.Printf("\n PIN Compability Failed %v == %v ? ", srcType.Name(), destType.Name())
 	}
+
 	return success, outPinName
+}
+
+func (w *Wire) PinCopierBitChannel(inch gocomm.BitChannel) {
+	Nchanels := w.splits
+	NextSize := 1
+	for cnt := 0; cnt < NextSize; cnt++ {
+		chdataIn := <-inch
+		NextSize = chdataIn.MaxExpected
+		//	fmt.Printf("\n PINCOPIER : %d. %v : READ  RAW data = %v", cnt, w.virtualPin[0].Name, chdataIn)
+
+		for i := 0; i < Nchanels; i++ {
+			sendch := w.virtualPin[i].Channel.(gocomm.BitChannel)
+			// sent := true
+			sendch <- chdataIn
+			//		fmt.Printf("\n %d : %s Write to ChannelID : %v ", i, w.virtualPin[i].Name, w.virtualPin[i].Channel)
+		}
+	}
+}
+
+func (w *Wire) PinCopierBitAChannel(inch gocomm.BitChannelA) {
+	Nchanels := w.splits
+	NextSize := 1
+	for cnt := 0; cnt < NextSize; cnt++ {
+		chdataIn := <-inch
+		NextSize = chdataIn.MaxExpected
+		//	fmt.Printf("\n PINCOPIER : %d. %v : READ RAW data = %v", cnt, w.virtualPin[0].Name, chdataIn)
+		for i := 0; i < Nchanels; i++ {
+			sendch := w.virtualPin[i].Channel.(gocomm.BitChannelA)
+			// sent := true
+			sendch <- chdataIn
+			//		fmt.Printf("\n %d : %s Write to ChannelID : %v ", i, w.virtualPin[i].Name, w.virtualPin[i].Channel)
+		}
+	}
+}
+
+func (w *Wire) PinCopierComplex128Channel(inch gocomm.Complex128Channel) {
+	Nchanels := w.splits
+	NextSize := 1
+	for cnt := 0; cnt < NextSize; cnt++ {
+		chdataIn := <-inch
+		NextSize = chdataIn.MaxExpected
+		//	fmt.Printf("\n PINCOPIER : %d. %v : READ  RAW data = %v", cnt, w.virtualPin[0].Name, chdataIn)
+
+		for i := 0; i < Nchanels; i++ {
+			sendch := w.virtualPin[i].Channel.(gocomm.Complex128Channel)
+			// sent := true
+			sendch <- chdataIn
+			//		fmt.Printf("\n %d : %s Write to ChannelID : %v ", i, w.virtualPin[i].Name, w.virtualPin[i].Channel)
+		}
+	}
+}
+
+func (w *Wire) PinCopierComplex128AChannel(inch gocomm.Complex128ChannelA) {
+	Nchanels := w.splits
+	NextSize := 1
+	for cnt := 0; cnt < NextSize; cnt++ {
+		chdataIn := <-inch
+		NextSize = chdataIn.MaxExpected
+		//	fmt.Printf("\n PINCOPIER : %d. %v : READ RAW data = %v", cnt, w.virtualPin[0].Name, chdataIn)
+
+		for i := 0; i < Nchanels; i++ {
+			sendch := w.virtualPin[i].Channel.(gocomm.Complex128ChannelA)
+			// sent := true
+			sendch <- chdataIn
+			//		fmt.Printf("\n %d : %s Write to ChannelID : %v ", i, w.virtualPin[i].Name, w.virtualPin[i].Channel)
+		}
+	}
+}
+func (w *Wire) PinCopier(inch interface{}) {
+
+	switch reflect.TypeOf(inch).Name() {
+
+	case "BitChannel":
+		scCH := inch.(gocomm.BitChannel)
+		w.PinCopierBitChannel(scCH)
+	case "BitChannelA":
+		scCH := inch.(gocomm.BitChannelA)
+		w.PinCopierBitAChannel(scCH)
+	case "Complex128Channel":
+		scCH := inch.(gocomm.Complex128Channel)
+		w.PinCopierComplex128Channel(scCH)
+	case "Complex128ChannelA":
+		scCH := inch.(gocomm.Complex128ChannelA)
+		w.PinCopierComplex128AChannel(scCH)
+	default:
+		fmt.Printf("Unknown Channel Type to COPY %v", reflect.TypeOf(inch).Name())
+	}
+	// var srcCh reflect.Value
+	fmt.Printf("\n Received channel of type %v", reflect.TypeOf(inch))
+	// srcCh = reflect.ValueOf(inch)
+
+}
+
+func ChannelDuplexer(InCH gocomm.Complex128Channel, OutCHA []gocomm.Complex128Channel) {
+	Nchanels := len(OutCHA)
+	var chdataIn gocomm.SComplex128Channel
+	var chdataOut gocomm.SComplex128Channel
+	NextSize := 1
+	for cnt := 0; cnt < NextSize; cnt++ {
+		chdataIn = <-InCH
+		data := chdataIn.Ch
+		NextSize = chdataIn.MaxExpected
+
+		// fmt.Printf("%d InputDuplexer : %v ", cnt, data)
+		for i := 0; i < Nchanels; i++ {
+			chdataOut.Ch = data
+			chdataOut.MaxExpected = NextSize
+			chdataOut.Message = chdataIn.Message
+			OutCHA[i] <- chdataOut
+		}
+	}
+	close(InCH)
+}
+
+func (w *Wire) Split(strands int) {
+	if w.isActive {
+		fmt.Errorf("\nWire : Cannot Split now its active Chip %v", w.DestinationChip.Module(w.activeMethod).Name)
+		return
+	}
+	if strands < 2 {
+
+		return
+	}
+	w.splits = strands
+
 }

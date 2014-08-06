@@ -7,12 +7,13 @@ import (
 )
 
 type PinInfo struct {
-	Id       int
-	Name     string
-	Desc     string
-	DataType reflect.Type
-	InputPin bool
-	Channel  interface{}
+	Id         int
+	Name       string
+	Desc       string
+	DataType   reflect.Type
+	InputPin   bool
+	Channel    interface{}
+	SourceName string
 }
 
 type ModuleInfo struct {
@@ -50,7 +51,22 @@ func (p PinInfo) String() string {
 }
 
 func (p *PinInfo) CreateChannel() {
-	p.Channel = reflect.New(p.DataType)
+	switch p.DataType.Name() {
+	case "BitChannel":
+		p.Channel = gocomm.NewBitChannel()
+	case "Complex128Channel":
+		p.Channel = gocomm.NewComplex128Channel()
+	case "Complex128AChannel":
+		p.Channel = gocomm.NewComplex128AChannel()
+	case "BitAChannel":
+		p.Channel = gocomm.NewBitAChannel()
+
+	default:
+		fmt.Printf("Which Type %v needs channel", p.DataType)
+		p.Channel = reflect.New(p.DataType)
+		fmt.Printf("\n atteptemd Channel =  %v ", p.Channel)
+	}
+
 }
 
 func (p *PinInfo) CreateBitChannel() {
