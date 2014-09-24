@@ -5,14 +5,20 @@ import (
 	"math"
 	"math/rand"
 	"reflect"
+	"strings"
 	"wiless/gocomm"
 	"wiless/gocomm/chipset"
+	"wiless/gocomm/dsp"
 	"wiless/gocomm/sources"
+	"wiless/vlib"
 )
 
 type ChannelEmulator struct {
 	noise float64
 	Mean  float64
+	pdp   vlib.VectorF
+	coeff vlib.VectorC
+	mode  string
 	/// Chipset Related
 	name          string
 	isInitialized bool
@@ -27,36 +33,50 @@ func (c *ChannelEmulator) SetNoise(mean, variance float64) {
 	c.noise = variance
 }
 
+/// mode=block,
+func (c *ChannelEmulator) SetFadingParams(pdp vlib.VectorF, Ts float64, mode string) {
+	c.pdp = pdp
+	c.mode = mode
+}
+
 func (m *ChannelEmulator) AWGNChannel(dummy gocomm.Complex128Channel) {
 	// fmt.Printf("\n Noise ready to Input %v", dummy)
 	outCH := m.Pins["symbolOut"].Channel.(gocomm.Complex128Channel)
 	// fmt.Printf("\n Output ready to Output %v", outCH)
-	var chdataOut gocomm.SComplex128Channel
-	var chdataIn gocomm.SComplex128Channel
+	var chdataOut gocomm.SComplex128Obj
+	var chdataIn gocomm.SComplex128Obj
 	samples := 1
 	// result := make([]complex64, samples)
-	var StdDev float64 = math.Sqrt(m.noise)
+	var StdDev float64 = math.Sqrt(m.noise * .5)
 	var Mean float64 = m.Mean
 	var noise complex128
-
+	// var noisevector vlib.VectorC
 	for i := 0; i < samples; i++ {
 
 		chdataIn = <-dummy
 		chdataOut.MaxExpected = chdataIn.MaxExpected
 		samples = chdataIn.MaxExpected
+
 		// fmt.Printf("\nAWGN expects %d samples @ %v", samples, dummy)
 		chdataOut.Message = chdataIn.Message
-		if chdataIn.Message != "BYPASS" {
-			if Mean != 0 && StdDev != 1 {
-				noise = complex128(complex(rand.NormFloat64()*StdDev+Mean, rand.NormFloat64()*StdDev+Mean))
-			} else {
+		chdataOut.Ts = chdataIn.Ts
+		chdataOut.TimeStamp = chdataIn.TimeStamp
+		if !strings.Contains(chdataIn.Message, "BYPASS") {
+
+			if Mean == 0 && StdDev == 1 {
 				noise = complex128(complex(rand.NormFloat64(), rand.NormFloat64()))
+			} else {
+				noise = complex128(complex(rand.NormFloat64()*StdDev+Mean, rand.NormFloat64()*StdDev+Mean))
+
 			}
+			// noisevector = append(noisevector, noise)
 			chdataOut.Ch = chdataIn.Ch + noise
 
 		} else {
 			chdataOut.Ch = chdataIn.Ch
+
 		}
+		//fmt.Printf("\nNoise%f=%f", StdDev, noisevector)
 		outCH <- chdataOut
 	}
 
@@ -67,8 +87,8 @@ func (m *ChannelEmulator) FadingChannel(InCH gocomm.Complex128Channel) {
 	outCH := m.Pins["symbolOut"].Channel.(gocomm.Complex128Channel)
 	NextSize := 1
 	N0 := .01 /// 10dB SNR
-	var chdataOut gocomm.SComplex128Channel
-	var chdataIn gocomm.SComplex128Channel
+	var chdataOut gocomm.SComplex128Obj
+	var chdataIn gocomm.SComplex128Obj
 	for i := 0; i < NextSize; i++ {
 
 		chdataIn = <-InCH
@@ -257,18 +277,21 @@ func (m ChannelEmulator) Name() string {
 func GenerateNoise(noiseDb float64, samples int) []complex64 {
 
 	result := make([]complex64, samples)
-	var StdDev float64 = math.Sqrt(math.Pow(10, noiseDb*.1))
+	//var StdDev float64 = math.Sqrt(math.Pow(10, noiseDb*.1))
+	noiseLinear := dsp.InvDb(noiseDb)
+	var StdDev float64 = math.Sqrt(noiseLinear * .5)
 	var Mean float64 = 0
-	if Mean != 0 && StdDev != 1 {
-		for i := 0; i < samples; i++ {
-
-			result[i] = complex64(complex(rand.NormFloat64()*StdDev+Mean, rand.NormFloat64()*StdDev+Mean))
-		}
-	} else {
+	if Mean == 0.0 && StdDev == 1.0 {
 		for i := 0; i < samples; i++ {
 			result[i] = complex64(complex(rand.NormFloat64(), rand.NormFloat64()))
 
 		}
+	} else {
+		for i := 0; i < samples; i++ {
+
+			result[i] = complex64(complex(rand.NormFloat64()*StdDev+Mean, rand.NormFloat64()*StdDev+Mean))
+		}
+
 	}
 	return result
 

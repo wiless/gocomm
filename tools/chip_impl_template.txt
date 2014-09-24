@@ -1,0 +1,10 @@
+ 
+/*
+/// Function 
+func (m *{{.ChipName}}) {{.Name}}({{range $arg := .InArgs}}{{$arg.Variable}} {{$arg.VariableType}}{{end}}){ 
+/// Read your data from Input channel(s) 
+/// And write it to OutputChannels defined below
+{{ range $arg := .OutArgs}}	{{$arg.Variable}}:=m.PinByName("{{$arg.Variable}}").Channel(gocomm.{{$arg.VariableType}})
+{{ end }}
+}
+*/

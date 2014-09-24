@@ -353,15 +353,27 @@ func (w *Wire) PinCopierComplex128Channel(inch gocomm.Complex128Channel) {
 		//	fmt.Printf("\n PINCOPIER : %d. %v : READ  RAW data = %v", cnt, w.virtualPin[0].Name, chdataIn)
 
 		for i := 0; i < Nchanels; i++ {
+
 			sendch := w.virtualPin[i].Channel.(gocomm.Complex128Channel)
 			// sent := true
-			sendch <- chdataIn
+			if i == 0 {
+				sendch <- chdataIn
+			} else {
+
+				select {
+				case sendch <- chdataIn:
+					fmt.Println("sent message", chdataIn)
+				default:
+					fmt.Println("no message sent")
+				}
+			}
+
 			//		fmt.Printf("\n %d : %s Write to ChannelID : %v ", i, w.virtualPin[i].Name, w.virtualPin[i].Channel)
 		}
 	}
 }
 
-func (w *Wire) PinCopierComplex128AChannel(inch gocomm.Complex128ChannelA) {
+func (w *Wire) PinCopierComplex128AChannel(inch gocomm.Complex128AChannel) {
 	Nchanels := w.splits
 	NextSize := 1
 	for cnt := 0; cnt < NextSize; cnt++ {
@@ -370,7 +382,7 @@ func (w *Wire) PinCopierComplex128AChannel(inch gocomm.Complex128ChannelA) {
 		//	fmt.Printf("\n PINCOPIER : %d. %v : READ RAW data = %v", cnt, w.virtualPin[0].Name, chdataIn)
 
 		for i := 0; i < Nchanels; i++ {
-			sendch := w.virtualPin[i].Channel.(gocomm.Complex128ChannelA)
+			sendch := w.virtualPin[i].Channel.(gocomm.Complex128AChannel)
 			// sent := true
 			sendch <- chdataIn
 			//		fmt.Printf("\n %d : %s Write to ChannelID : %v ", i, w.virtualPin[i].Name, w.virtualPin[i].Channel)
@@ -390,8 +402,8 @@ func (w *Wire) PinCopier(inch interface{}) {
 	case "Complex128Channel":
 		scCH := inch.(gocomm.Complex128Channel)
 		w.PinCopierComplex128Channel(scCH)
-	case "Complex128ChannelA":
-		scCH := inch.(gocomm.Complex128ChannelA)
+	case "Complex128AChannel":
+		scCH := inch.(gocomm.Complex128AChannel)
 		w.PinCopierComplex128AChannel(scCH)
 	default:
 		fmt.Printf("Unknown Channel Type to COPY %v", reflect.TypeOf(inch).Name())
@@ -404,8 +416,8 @@ func (w *Wire) PinCopier(inch interface{}) {
 
 func ChannelDuplexer(InCH gocomm.Complex128Channel, OutCHA []gocomm.Complex128Channel) {
 	Nchanels := len(OutCHA)
-	var chdataIn gocomm.SComplex128Channel
-	var chdataOut gocomm.SComplex128Channel
+	var chdataIn gocomm.SComplex128Obj
+	var chdataOut gocomm.SComplex128Obj
 	NextSize := 1
 	for cnt := 0; cnt < NextSize; cnt++ {
 		chdataIn = <-InCH

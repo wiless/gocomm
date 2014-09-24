@@ -10,8 +10,9 @@ import (
 	"strconv"
 	"time"
 	// "wiless/gocmm"
-	// "reflect"
+	"reflect"
 	"wiless/gocomm"
+
 	// "wiless/gocomm/cdma"
 	"wiless/gocomm/channel"
 	"wiless/gocomm/chipset"
@@ -25,7 +26,7 @@ var N int
 var USERS int
 
 func init() {
-	N = 20
+	N = 5120
 	USERS = 1
 	rand.Seed(time.Now().UTC().UnixNano())
 
@@ -44,12 +45,14 @@ func init() {
 
 func main() {
 	t := time.Now()
-
 	bsrc := new(sources.BitSource)
 	txmodem := modem.NewModem(2)
 	rxmodem := modem.NewModem(2)
 	var chem1, chem2 channel.ChannelEmulator
 
+	fmt.Printf("\n 1. Type of Modem %v", reflect.TypeOf(txmodem).Name())
+	fmt.Printf("\n 2. Type of channel %v", reflect.TypeOf(chem1).Name())
+	fmt.Printf("\n 2. Type of Bitsrc %v", reflect.TypeOf(*bsrc).Name())
 	/// Initialize each module
 	bsrc.SetSize(N)
 	bsrc.InitializeChip()
@@ -84,7 +87,7 @@ func main() {
 	}
 
 	modules := [...]string{"genbit", "modulate", "fadingChannel", "awgn", "demodulate"}
-	junctionwire := 2 // @output of chem1
+	// junctionwire := 0 // @output of genbit
 
 	var success bool
 	var outpin string
@@ -95,9 +98,9 @@ func main() {
 
 	for i := 0; i < len(wire); i++ {
 		fmt.Printf("\n Wire %d ", i)
-		if i == junctionwire {
-			wire[i].Split(2)
-		}
+		// if i == junctionwire {
+		// 	wire[i].Split(2)
+		// }
 		success, outpin = wire[i].ConnectPins(outpin, modules[i+1])
 	}
 
@@ -105,11 +108,18 @@ func main() {
 	// success, outpin = wire2.ConnectPins(outpin, "awgn")
 	// success, outpin = wire2.ConnectPins(outpin, "awgn")
 	// success, outpin = wire3.ConnectPins(outpin, "demodulate")
-	go Sink(wire[junctionwire].GetProbe(0))
+	// go Sink(wire[junctionwire].GetProbe(0))
+	// fmt.Printf("%v ", wire[junctionwire].GetProbe(0).DataType)
+
+	// go sink.CROremote(wire[junctionwire].GetProbe(0))
+
+	// go Sink(wire[junctionwire].GetProbe(0))
+
 	if success {
 		lastwire := wire[len(wire)-1]
 		pin := lastwire.DestinationChip.PinByName(lastwire.RecentOutputPinName())
-		Sink(pin)
+		//Sink(pin)
+		sink.CROremote(pin)
 
 	}
 
@@ -122,115 +132,6 @@ func main() {
 	fmt.Println("\n", time.Now())
 	fmt.Printf("\nTime Elaspsed %v \n", time.Since(t))
 
-}
-
-func Sink(pin chipset.PinInfo) {
-
-	fmt.Printf("\n=======================\n  Will Sink DataOut from Pin %v", pin)
-	count := 1
-	switch pin.DataType.Name() {
-	case "BitChannel":
-		for i := 0; i < count; i++ {
-			// fmt.Printf("\n Status of Channel %d = %#v ", i, pin.Channel)
-			ddata := <-pin.Channel.(gocomm.BitChannel)
-			// fmt.Printf(" SPECIAL MESSAGE %s", ddata.Message)
-			if ddata.Message == "" {
-				fmt.Printf("\nPin : %s - Read Bit %d = %v ", pin.Name, i, ddata.Ch)
-			} else {
-				fmt.Printf("\nPin : %s - Read Bit %d = %v : %s", pin.Name, i, ddata.Ch, ddata.Message)
-			}
-
-			count = ddata.MaxExpected
-			// ddata := choutData.Ch
-			// max = choutData.MaxExpected
-			// fmt.Printf(" %d %d", uint8(real(ddata)), uint8(imag(ddata)))
-			// fmt.Printf("\n %d @ max Symbols limit  = %d %s ", i, max, choutData.Message)
-
-		}
-	case "Complex128Channel":
-		for i := 0; i < count; i++ {
-			ddata := <-pin.Channel.(gocomm.Complex128Channel)
-			// fmt.Printf(" SPECIAL MESSAGE %s", ddata.Message)
-			if ddata.Message == "" {
-				fmt.Printf("\nPin : %s - Read Complex %d = %v ", pin.Name, i, ddata.Ch)
-			} else {
-				fmt.Printf("\nPin : %s - Read Complex %d = %v : %s", pin.Name, i, ddata.Ch, ddata.Message)
-			}
-			count = ddata.MaxExpected
-			// ddata := choutData.Ch
-			// max = choutData.MaxExpected
-			// fmt.Printf(" %d %d", uint8(real(ddata)), uint8(imag(ddata)))
-			// fmt.Printf("\n %d @ max Symbols limit  = %d %s ", i, max, choutData.Message)
-
-		}
-	default:
-		fmt.Printf("\n Unknown Data type")
-	}
-
-}
-
-/// Converts each Vector Sample to a Sample which can be processed at sample rate
-/// This can be considered as Upsampler Each vector at rate Ts , is communicated to the next block at Ts/N samples
-func Vector2Sample(uid int, NextSize int, InCH gocomm.Complex128ChannelA, OutCH gocomm.Complex128Channel) {
-	var chdataOut gocomm.SComplex128Channel
-	var chdataIn gocomm.SComplex128ChannelA
-
-	cnt := 0
-	for i := 0; i < NextSize; i++ {
-		chdataIn = <-InCH
-		indata := chdataIn.Ch
-		veclen := len(indata)
-		cnt += veclen
-
-		for indx := 0; indx < veclen; indx++ {
-			chdataOut.Ch = indata[indx]
-			OutCH <- chdataOut
-		}
-	}
-	fmt.Printf("\n User%d : Closing", uid)
-
-	close(InCH)
-}
-
-func ChannelDuplexer(InCH gocomm.Complex128Channel, OutCHA []gocomm.Complex128Channel) {
-	Nchanels := len(OutCHA)
-	var chdataIn gocomm.SComplex128Channel
-	var chdataOut gocomm.SComplex128Channel
-	NextSize := 1
-	for cnt := 0; cnt < NextSize; cnt++ {
-		chdataIn = <-InCH
-		data := chdataIn.Ch
-		NextSize = chdataIn.MaxExpected
-
-		// fmt.Printf("%d InputDuplexer : %v ", cnt, data)
-		for i := 0; i < Nchanels; i++ {
-			chdataOut.Ch = data
-			chdataOut.MaxExpected = NextSize
-			chdataOut.Message = chdataIn.Message
-			OutCHA[i] <- chdataOut
-		}
-	}
-	close(InCH)
-}
-
-/// Converts each Vector Sample to a Sample which can be processed at sample rate
-/// This can be considered as DownSample Each vector at rate Ts , is communicated to the next block at Ts/N samples
-func Sample2Vector(uid int, NextSize int, factor int, InCH gocomm.Complex128Channel, OutCH gocomm.Complex128ChannelA) {
-	var chdataOut gocomm.SComplex128ChannelA
-
-	cnt := 0
-	for i := 0; i < NextSize; i++ {
-
-		vecdata := make([]complex128, factor)
-		for i := 0; i < factor; i++ {
-			vecdata[i] = (<-InCH).Ch
-		}
-		cnt += factor
-		chdataOut.Ch = vecdata
-		OutCH <- chdataOut
-	}
-	fmt.Printf("\n User%d : Closing", uid)
-	close(InCH)
 }
 
 func SinkStreamDataSample(uid int, NextSize int, InCH gocomm.Complex128Channel, done chan bool) {
@@ -312,7 +213,7 @@ func SinkDataSample(uid int, NextSize int, InCH gocomm.Complex128Channel, done c
 	done <- true
 }
 
-func SinkDataVector(uid int, NextSize int, InCH gocomm.Complex128ChannelA, done chan bool) {
+func SinkDataVector(uid int, NextSize int, InCH gocomm.Complex128AChannel, done chan bool) {
 	var txsymbols []complex128
 	txsymbols = make([]complex128, 0, NextSize)
 	randid := uid

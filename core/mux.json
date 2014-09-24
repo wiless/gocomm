@@ -1,0 +1,30 @@
+{
+"Name":"Mux",
+"Pins": [
+{
+"Id":0,
+"Name":"inputPin0",
+"Desc":"",
+"DataType":"Complex128Channel",
+"InputPin":true
+},
+{
+"Id":1,
+"Name":"outputPin0",
+"Desc":"",
+"DataType":"Complex128AChannel",
+"InputPin":false
+}
+]
+,
+"Modules": [
+{
+"Id":0,
+"Name":"mux",
+"InPins":["inputPin0"],
+"OutPins":["outputPin0"],
+"Function":"Mux"
+}
+]
+
+}

@@ -83,7 +83,7 @@ func main() {
 		}
 
 	}
-	// fmt.Printf(
+
 }
 
 type somethingMakesCommon interface {

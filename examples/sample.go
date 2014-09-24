@@ -68,7 +68,7 @@ func main() {
 		// go SinkDataSample(user, NextSize, modem2cdmaCH, done[user])
 
 		/// Spread the block of Symbols into Chips per frame
-		cdma2Tx := make(gocomm.Complex128ChannelA)
+		cdma2Tx := make(gocomm.Complex128AChannel)
 		go cdma.SpreadBlock(NextSize, modem2cdmaCH, cdma2Tx)
 		NextSize = cdma.GetSpreadOutputBlockSize(NextSize)
 
@@ -84,7 +84,7 @@ func main() {
 		go sink.CRO(0.125, NextSize, dualChannelA[0])
 		go Channel(user, NextSize, dualChannelA[1], tx2rxCH)
 
-		downCH := make(gocomm.Complex128ChannelA)
+		downCH := make(gocomm.Complex128AChannel)
 		go Sample2Vector(user, NextSize, 1, tx2rxCH, downCH)
 
 		/// Despread the input chips into symbol per frame
@@ -138,7 +138,7 @@ func Channel(uid int, NextSize int, InCH gocomm.Complex128Channel, OutCH gocomm.
 
 /// Converts each Vector Sample to a Sample which can be processed at sample rate
 /// This can be considered as Upsampler Each vector at rate Ts , is communicated to the next block at Ts/N samples
-func Vector2Sample(uid int, NextSize int, InCH gocomm.Complex128ChannelA, OutCH gocomm.Complex128Channel) {
+func Vector2Sample(uid int, NextSize int, InCH gocomm.Complex128AChannel, OutCH gocomm.Complex128Channel) {
 
 	cnt := 0
 	for i := 0; i < NextSize; i++ {
@@ -169,7 +169,7 @@ func ChannelDuplexer(NextSize int, InCH gocomm.Complex128Channel, OutCHA []gocom
 
 /// Converts each Vector Sample to a Sample which can be processed at sample rate
 /// This can be considered as DownSample Each vector at rate Ts , is communicated to the next block at Ts/N samples
-func Sample2Vector(uid int, NextSize int, factor int, InCH gocomm.Complex128Channel, OutCH gocomm.Complex128ChannelA) {
+func Sample2Vector(uid int, NextSize int, factor int, InCH gocomm.Complex128Channel, OutCH gocomm.Complex128AChannel) {
 
 	cnt := 0
 	for i := 0; i < NextSize; i++ {
@@ -264,7 +264,7 @@ func SinkDataSample(uid int, NextSize int, InCH gocomm.Complex128Channel, done c
 	done <- true
 }
 
-func SinkDataVector(uid int, NextSize int, InCH gocomm.Complex128ChannelA, done chan bool) {
+func SinkDataVector(uid int, NextSize int, InCH gocomm.Complex128AChannel, done chan bool) {
 	var txsymbols []complex128
 	txsymbols = make([]complex128, 0, NextSize)
 	randid := uid

@@ -1,4 +1,4 @@
-package CDMA
+package SS
 
 import (
 	// "fmt"
@@ -26,7 +26,7 @@ func (c *CDMA) GetDeSpreadOutputBlockSize(N int) int {
 	return N / len(c.SpreadSequence)
 }
 
-func (cdma *CDMA) DeSpreadBlock(expectedInputSize int, chInway gocomm.Complex128ChannelA, OutCH gocomm.Complex128Channel) {
+func (cdma *CDMA) DeSpreadBlock(expectedInputSize int, chInway gocomm.Complex128AChannel, OutCH gocomm.Complex128Channel) {
 
 	despcode := vlib.Conj(cdma.SpreadSequence)
 
@@ -77,7 +77,7 @@ func (cdma *CDMA) DeSpread(InCH gocomm.Complex128Channel, OutCH gocomm.Complex12
 	OutCH <- result
 }
 
-func (cdma *CDMA) SpreadBlock(expectedInputSymbols int, chInway gocomm.Complex128Channel, OutCH gocomm.Complex128ChannelA) {
+func (cdma *CDMA) SpreadBlock(expectedInputSymbols int, chInway gocomm.Complex128Channel, OutCH gocomm.Complex128AChannel) {
 
 	spcode := cdma.SpreadSequence
 	if len(spcode) == 0 {
@@ -95,7 +95,7 @@ func (cdma *CDMA) SpreadBlock(expectedInputSymbols int, chInway gocomm.Complex12
 	close(chInway)
 }
 
-func (cdma *CDMA) Spread(chInway gocomm.Complex128Channel, OutCH gocomm.Complex128ChannelA) {
+func (cdma *CDMA) Spread(chInway gocomm.Complex128Channel, OutCH gocomm.Complex128AChannel) {
 
 	insymbol := <-chInway
 	spcode := cdma.SpreadSequence

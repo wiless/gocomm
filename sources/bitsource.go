@@ -24,6 +24,7 @@ func (s *Source) SetSize(size int) {
 }
 
 type BitSource struct {
+	name string
 	Source
 	Pins          map[string]chipset.PinInfo
 	PinNames      map[int]string
@@ -35,8 +36,8 @@ type BitSource struct {
 func (s *BitSource) GenBit(bitChannel gocomm.BitChannel) {
 	// fmt.Printf("\n Writing bits to %v", bitChannel)
 	bits := RandB(s.Size())
-	// var data gocomm.SBitChannel
-	var chdata gocomm.SBitChannel
+	// var data gocomm.SBitObj
+	var chdata gocomm.SBitObj
 	chdata.MaxExpected = s.Size()
 
 	fmt.Println("\ntxbits=", bits)
@@ -169,13 +170,14 @@ func GrayCode(cnt int) []string {
 
 	return keys
 }
-func (b BitSource) name() {
 
+func (b *BitSource) SetName(nameit string) {
+	b.name = nameit
 }
 
 /// CHIP related interafaces
 func (b BitSource) Name() string {
-	return "BitSource"
+	return b.name
 }
 func (b BitSource) InPinCount() int {
 	return 0
