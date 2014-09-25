@@ -19,21 +19,34 @@ var wg sync.WaitGroup
 var BlockSize int
 var NBlocks = 200
 
+var snr_ber map[float64]float64
+var snr_block map[float64]float64
+var snr vlib.VectorF
+
 func main() {
 
 	runtime.GOMAXPROCS(5)
 	BlockSize = 1000 // 20 samples
 	SF := 1
+
+	snr_ber = make(map[float64]float64)
+	snr_block = make(map[float64]float64)
 	begin := time.Now()
 	hn := vlib.NewOnesF(1)
 	spcode := vlib.NewOnesC(SF)
-	snr := vlib.VectorF{0, 10, 100}
+	// snr = vlib.VectorF{0, 10, 100}
 	snr = vlib.ToVectorF("0:2:20")
 	fmt.Printf("\nSNR : %v", snr)
 	fmt.Printf("\nhn : %v", hn)
 	linkresult := make(map[float64]float64, 1)
 
 	outCH := make([]gocomm.FloatChannel, snr.Size())
+	fmt.Printf("\n SNR ")
+	for i := 0; i < len(snr); i++ {
+		// blocks := snr_block[snr[i]] + 1
+		fmt.Printf("%2.2f ", snr[i])
+	}
+	fmt.Printf("\n")
 	for i := 0; i < snr.Size(); i++ {
 		// wg.Add(1)
 		outCH[i] = gocomm.NewFloatChannel()
@@ -64,6 +77,7 @@ func SimulateLinkFn(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC, outCH go
 	var floatobj gocomm.SFloatObj
 	floatobj.Ch = 0
 	for j := 0; j < NBlocks; j++ {
+		snr_block[SNR] = float64(j)
 		result := SimulateLink(SNR, pdp, spcode)
 		floatobj.Ch += result
 	}
@@ -108,6 +122,7 @@ func SimulateLink(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC) float64 {
 	go (func(bitChannel gocomm.BitChannel) {
 		for i := 0; i < BlockSize; i++ {
 			dataArray.Ch = bitsample[i]
+
 			// fmt.Printf("\n Transmitting .. %v", dataArray)
 			bitChannel <- dataArray
 
@@ -193,8 +208,24 @@ func SimulateLink(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC) float64 {
 	// fmt.Printf("\nrxbits=%v", result)
 	// fmt.Printf("\nErr=%v %v", bitsample.CountErrors(result), err)
 	// gocomm.WGroup.Wait()
-
+	snr_ber[SNR] += result
+	// snr_ber[SNR] /= snr_block[SNR]
+	updateTable()
+	// fmt.Printf("\r BLOCK %v \n BER : %v", snr_block, snr_ber)
 	return result
+}
+
+func updateTable() {
+
+	// fmt.Printf("\r === ADB === %v", snr_ber[0])
+	str := ""
+	for i := 0; i < len(snr); i++ {
+		blocks := snr_block[snr[i]] + 1
+		// str += fmt.Sprintf("%2.2e (%d) ", snr_ber[snr[i]]/blocks, int(snr_block[snr[i]])+1)
+		str += fmt.Sprintf("%2.2e ", snr_ber[snr[i]]/blocks)
+	}
+	fmt.Printf("\r BER(block) : %s", str)
+
 }
 
 //type xyvec map[float64]float64
@@ -218,7 +249,7 @@ func Print(xyvec map[float64]float64, xlabel string, ylabel string) {
 	}
 
 	//keys := []float64(x)
-	fmt.Printf("\n%s=%e\n %s=%e", xlabel, x, ylabel, y)
+	fmt.Printf("\n%s=%1.2e\n %s=%1.2e", xlabel, x, ylabel, y)
 	//fmt.Printf("\n%s=%f", xlabel, x)
 	//fmt.Printf("\n%s=%f", ylabel, y)
 }
