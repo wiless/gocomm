@@ -12,6 +12,7 @@ func main() {
 	fmt.Print("GOPROCS:=", runtime.GOMAXPROCS(8))
 	start := time.Now()
 	user1 := core.NewSetup()
+
 	user2 := core.NewSetup()
 	// fmt.Printf("\nLink %v", user1)
 	// fmt.Printf("\nLink %v", user2)
