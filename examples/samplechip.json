@@ -1,0 +1,69 @@
+{    
+        "Name": "SampleChip",
+        "Pins": [
+                {
+                        "Id": 0,
+                        "Name": "bitIn",
+                        "Desc": "",
+                        "DataType": "BitChannel",
+                        "InputPin": true,
+                        "ModuleName": ""
+                },
+                {
+                        "Id": 1,
+                        "Name": "symbolIn",
+                        "Desc": "",
+                        "DataType": "Complex128Channel",
+                        "InputPin": true,
+                        "ModuleName": ""
+                },
+                {
+                        "Id": 2,
+                        "Name": "symbolOut",
+                        "Desc": "",
+                        "DataType": "Complex128Channel",
+                        "InputPin": false,
+                        "ModuleName": "modulate"
+                },
+                {
+                        "Id": 3,
+                        "Name": "bitOut",
+                        "Desc": "",
+                        "DataType": "Complex128Channel",
+                        "InputPin": false,
+                        "ModuleName": "demodulate"
+                }
+        ],
+        "Modules": [
+                {
+                        "Id": 0,
+                        "Name": "modulate",
+                        "Desc": "This modulate modulates the input bits from Inpin 'bitIn' and writes to 'symbolOut' ",
+                        "InPins": [
+                                "bitIn"
+                        ],
+                        "OutPins": [
+                                "symbolOut"
+                        ],
+                        "Function": "SayModulate",
+                        "InPinIDs": null,
+                        "OutPinIDs": null,
+                        "TestNames": null
+                },
+                {
+                        "Id": 1,
+                        "Name": "demodulate",
+                        "Desc": "This modulate DeModulates the input Symbols from Inpin 'symbolIn' and writes to 'bitOut' ",
+                        "InPins": [
+                                "symbolIn"
+                        ],
+                        "OutPins": [
+                                "bitOut"
+                        ],
+                        "Function": "SayDemodulate",
+                        "InPinIDs": null,
+                        "OutPinIDs": null,
+                        "TestNames": null
+                }
+        ]
+}

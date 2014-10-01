@@ -1,0 +1,21 @@
+{
+		"Name":"AWGNLink",
+        "Chips": [
+                {
+                        "Type": "Modem",
+                        "Name": "txmodem"
+                },
+                {
+                        "Type": "Modem",
+                        "Name": "rxmodem"
+                },
+                {
+                        "Type": "BitSource",
+                        "Name": "source"
+                },
+                {
+                        "Type": "ChannelEmulator",
+                        "Name": "fading"
+                }
+        ]
+}

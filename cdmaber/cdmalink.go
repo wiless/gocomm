@@ -21,6 +21,9 @@ var NBlocks = 200
 
 var snr_ber map[float64]float64
 var snr_block map[float64]float64
+var snr_ber1 map[float64]float64
+var snr_block1 map[float64]float64
+
 var snr vlib.VectorF
 
 func main() {
@@ -31,6 +34,9 @@ func main() {
 
 	snr_ber = make(map[float64]float64)
 	snr_block = make(map[float64]float64)
+	snr_ber1 = make(map[float64]float64)
+	snr_block1 = make(map[float64]float64)
+
 	begin := time.Now()
 	hn := vlib.NewOnesF(1)
 	spcode := vlib.NewOnesC(SF)
@@ -39,8 +45,10 @@ func main() {
 	fmt.Printf("\nSNR : %v", snr)
 	fmt.Printf("\nhn : %v", hn)
 	linkresult := make(map[float64]float64, 1)
+	linkresult1 := make(map[float64]float64, 1)
 
 	outCH := make([]gocomm.FloatChannel, snr.Size())
+	outCH1 := make([]gocomm.FloatChannel, snr.Size())
 	fmt.Printf("\n SNR ")
 	for i := 0; i < len(snr); i++ {
 		// blocks := snr_block[snr[i]] + 1
@@ -50,7 +58,9 @@ func main() {
 	for i := 0; i < snr.Size(); i++ {
 		// wg.Add(1)
 		outCH[i] = gocomm.NewFloatChannel()
-		go SimulateLinkFn(snr[i], hn, spcode, outCH[i])
+		outCH1[i] = gocomm.NewFloatChannel()
+		go SimulateLinkFn(snr[i], hn, spcode, outCH[i], 0)
+		go SimulateLinkFn(snr[i]-2, hn, spcode, outCH1[i], 1)
 
 	}
 	// wg.Wait()
@@ -58,8 +68,12 @@ func main() {
 	for i := 0; i < snr.Size(); i++ {
 		data := <-outCH[i]
 		linkresult[snr[i]] = data.Ch
+		data1 := <-outCH1[i]
+		linkresult1[snr[i]-2] = data1.Ch
+
 	}
 	Print(linkresult, "SNR", "BER")
+	Print(linkresult1, "SNR", "BER")
 	//for i := 0; i < snr.Size(); i++ {
 	//	fmt.Printf("\n%v = %v", snr[i], linkresult[snr[i]])
 	//}
@@ -73,19 +87,19 @@ func main() {
 	fmt.Printf("\nTime Elapsed : %v\n", time.Since(begin))
 }
 
-func SimulateLinkFn(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC, outCH gocomm.FloatChannel) {
+func SimulateLinkFn(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC, outCH gocomm.FloatChannel, uid int) {
 	var floatobj gocomm.SFloatObj
 	floatobj.Ch = 0
 	for j := 0; j < NBlocks; j++ {
 		snr_block[SNR] = float64(j)
-		result := SimulateLink(SNR, pdp, spcode)
+		result := SimulateLink(SNR, pdp, spcode, uid)
 		floatobj.Ch += result
 	}
 	floatobj.Ch /= float64(NBlocks)
 	outCH <- floatobj
 	// wg.Done()
 }
-func SimulateLink(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC) float64 {
+func SimulateLink(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC, uid int) float64 {
 	var cdma core.CDMA
 	bitTs := 1.0
 	cdma.InitializeChip()
@@ -208,7 +222,12 @@ func SimulateLink(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC) float64 {
 	// fmt.Printf("\nrxbits=%v", result)
 	// fmt.Printf("\nErr=%v %v", bitsample.CountErrors(result), err)
 	// gocomm.WGroup.Wait()
-	snr_ber[SNR] += result
+	if uid == 0 {
+		snr_ber[SNR] += result
+	} else {
+		snr_ber1[SNR] += result
+	}
+
 	// snr_ber[SNR] /= snr_block[SNR]
 	updateTable()
 	// fmt.Printf("\r BLOCK %v \n BER : %v", snr_block, snr_ber)
@@ -219,12 +238,15 @@ func updateTable() {
 
 	// fmt.Printf("\r === ADB === %v", snr_ber[0])
 	str := ""
+	str1 := ""
 	for i := 0; i < len(snr); i++ {
 		blocks := snr_block[snr[i]] + 1
+		blocks1 := snr_block1[snr[i]-2] + 1
 		// str += fmt.Sprintf("%2.2e (%d) ", snr_ber[snr[i]]/blocks, int(snr_block[snr[i]])+1)
 		str += fmt.Sprintf("%2.2e ", snr_ber[snr[i]]/blocks)
+		str1 += fmt.Sprintf("%2.2e ", snr_ber1[snr[i]]/blocks1)
 	}
-	fmt.Printf("\r BER(block) : %s", str)
+	fmt.Printf("\r BER(block) : %s \t %s", str, str1)
 
 }
 

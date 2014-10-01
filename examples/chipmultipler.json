@@ -1,0 +1,20 @@
+{
+	"chipName": "multipler",
+	"pin": {
+		"id": 0,
+		"name": "develop",
+		"source_branch": "altiostar-nightly",
+		"source_project_id": 24,
+		"author_id": 2,
+		"assignee_id": null,
+		"title": "merge bugfix for #7 to 'develop' branch",
+		"created_at": "2014-06-23T06:51:15.016Z",
+		"updated_at": "2014-06-24T10:32:54.054Z",
+		"milestone_id": null,
+		"state": "merged",
+		"merge_status": "can_be_merged",
+		"target_project_id": 24,
+		"iid": 18,
+		"description": "Changes from bug fix #7 in 'altiostar-nightly' must be merged to 'develop' branch"
+	}
+}

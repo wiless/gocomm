@@ -8,7 +8,7 @@ import (
 	// "github.com/gonum/stat"
 
 	"time"
-	"wiless/gocomm/funcs"
+	"wiless/gocomm/dsp"
 
 	"github.com/mjibson/go-dsp/fft"
 	"wiless/gocomm/sources"
