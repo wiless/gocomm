@@ -1,0 +1,5 @@
+{{.Name}}
+{{ range $element := .Chips}}
+        var {{ $element.Name}} {{ $element.Type}}
+
+{{ end }}

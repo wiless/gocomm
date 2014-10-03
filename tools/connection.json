@@ -2,15 +2,15 @@
 	"Name":"AWGNLink",
         "Chips": [
                 {
-                        "Type": "Modem",
+                        "Type": "core.Modem",
                         "Name": "txmodem"
                 },
                 {
-                        "Type": "Modem",
+                        "Type": "core.Modem",
                         "Name": "rxmodem"
                 },
                 {
-                        "Type": "BitSource",
+                        "Type": "core.BitSource",
                         "Name": "source"
                 }
         ],
@@ -19,14 +19,14 @@
                        "src": "source",
                        "srcOutputPin":"outputPin0",
                        "destination": "txmodem",
-                       "destinationFunction":"Modulate",
+                       "destinationFunction":"Modulate"
 
                 },
                 {
                        "src": "txmodem",
                        "srcOutputPin":"outputPin0",
                        "destination": "rxmodem",
-                       "destinationFunction":"DeModulate",
-                },
+                       "destinationFunction":"DeModulate"
+                }
         ]
 }
