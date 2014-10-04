@@ -7,13 +7,14 @@ import (
 )
 
 type PinInfo struct {
-	Id         int
-	Name       string
-	Desc       string
-	DataType   reflect.Type
-	InputPin   bool
-	Channel    interface{}
-	SourceName string
+	Id          int
+	Name        string
+	Desc        string
+	DataType    reflect.Type
+	InputPin    bool
+	NonBlocking bool
+	Channel     interface{}
+	SourceName  string
 }
 
 type ModuleInfo struct {
@@ -32,11 +33,13 @@ type Chip interface {
 	OutPinCount() int
 	PinByName(string) PinInfo
 	PinByID(int) PinInfo
-
+	Set(json string)    /// Json formatted parameters for the Chip
+	Get() string        /// returns the JSON formatted parameters of the Chip
+	Commands() []string /// returns the commands recognized by the Chip
 	ModuleByName(string) ModuleInfo
 
-	PinIn(int) PinInfo
-	PinOut(int) PinInfo
+	PinIn(indx int) PinInfo
+	PinOut(indx int) PinInfo
 	ModulesCount() int
 	Module(int) ModuleInfo
 	IsInitialized() bool
