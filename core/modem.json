@@ -37,15 +37,13 @@
 "Name":"modulate",
 "InPins":["inputPin0"],
 "OutPins":["outputPin0"],
-"Function":"Modulate"
-},
+"Function":"Modulate"},
 {
 "Id":1,
 "Name":"demodulate",
 "InPins":["inputPin1"],
 "OutPins":["outputPin1"],
-"Function":"DeModulate"
-}
+"Function":"DeModulate"}
 ]
 
 }

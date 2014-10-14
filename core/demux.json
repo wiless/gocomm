@@ -23,8 +23,7 @@
 "Name":"demux",
 "InPins":["inputPin0"],
 "OutPins":["outputPin0"],
-"Function":"DeMux"
-}
+"Function":"DeMux"}
 ]
 
 }

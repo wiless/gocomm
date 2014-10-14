@@ -22,9 +22,9 @@ type ModemIterface interface {
 
 type Modem struct {
 	bitsPerSymbol      int
-	size               int
-	name               string
+	modetype           string
 	offset             float64
+	size               int
 	keys               []string
 	constellationTable map[string]complex128
 	Constellation      []complex128
@@ -35,13 +35,18 @@ type Modem struct {
 	ModuleNames        map[int]string
 }
 
+func (m *Modem) Type() string {
+	return m.modetype
+}
+
 func (m *Modem) BitsPerSymbol() int {
 	return m.bitsPerSymbol
 
 }
-func NewModem(size int) Modem {
+
+func NewModem(size int, modeType string) Modem {
 	var result Modem
-	result.Init(size)
+	result.Init(size, modeType)
 	result.InitializeChip()
 	return result
 }
@@ -293,21 +298,22 @@ func (m *Modem) DemodSymbolCH(index int, rxsymbolchIn chan complex128, detBitsCh
 
 }
 
-func (m *Modem) Init(wordlength int) {
+func (m *Modem) Init(wordlength int, modetype string) {
 	m.bitsPerSymbol = wordlength
+	m.modetype = modetype
 	switch wordlength {
 	case 1:
-		m.name = "BPSK"
+		m.modetype = "BPSK"
 	case 2:
-		m.name = "QPSK"
+		m.modetype = "QPSK"
 		m.offset = math.Pi / 4.0
 	case 3:
-		m.name = "8PSK"
+		m.modetype = "8PSK"
 	case 4:
-		m.name = "16PSK"
+		m.modetype = "16PSK"
 
 	case 256:
-		m.name = "256QAM"
+		m.modetype = "256QAM"
 
 		n := int64(123)
 		str := strconv.FormatInt(n, 2)
@@ -356,7 +362,7 @@ func (m *Modem) Print() {
 	fmt.Printf("\n Map Table : %v", m.constellationTable)
 }
 func (m Modem) String() string {
-	return fmt.Sprintf("A %s Modem with %d bits/Symbol", m.name, m.bitsPerSymbol)
+	return fmt.Sprintf("A %s Modem with %d bits/Symbol", m.modetype, m.bitsPerSymbol)
 }
 
 func shift(data []complex128, offset complex128) []complex128 {
@@ -439,19 +445,16 @@ func (m Modem) Module(moduleid int) chipset.ModuleInfo {
 }
 
 func (m Modem) SayHello() {
-	fmt.Printf("\n Hi from \n %v", m.Name())
+	fmt.Printf("\n Hi from \n %v", m.modetype)
 }
 
 func (m *Modem) SetName(nameit string) {
-	m.name = nameit
-}
-func (m Modem) Name() string {
-	return m.name
+	m.modetype = nameit
 }
 
 func (m *Modem) SayModulate(dummy gocomm.BitChannel) {
 
-	// fmt.Printf("\n BLAH BLAH BLAH BLAH BLAH BLAH %v MODULATE RUNNING...", m.Name())
+	// fmt.Printf("\n BLAH BLAH BLAH BLAH BLAH BLAH %v MODULATE RUNNING...", m.modetype())
 	// maxInputExpected:=
 	// fmt.Printf("\n AT MODEM MaxBits  expected is %d", dummy.MaxExpected)
 	// temp := 1
@@ -465,7 +468,7 @@ func (m *Modem) SayModulate(dummy gocomm.BitChannel) {
 
 }
 func (m *Modem) SayDemodulate(dummy gocomm.Complex128Channel) {
-	// fmt.Printf("\n CHIPSET %v Demodulator RUNNING...", m.Name())
+	// fmt.Printf("\n CHIPSET %v Demodulator RUNNING...", m.modetype())
 	// fmt.Printf("\n Demodulator will try reading from %v  ", dummy.Ch)
 	outCH := m.Pins["bitOut"].Channel.(gocomm.Complex128Channel)
 
@@ -570,7 +573,7 @@ func (m *Modem) InitPins() {
 	dummypin.SourceName = "modulate"
 	m.Pins["symbolOut"] = dummypin
 
-	// fmt.Printf("\n %v : PinO : %v , Channel : %v", m.Name(), m.Pins["symbolOut"].Name, m.Pins["symbolOut"].Channel)
+	// fmt.Printf("\n %v : PinO : %v , Channel : %v", m.modetype(), m.Pins["symbolOut"].Name, m.Pins["symbolOut"].Channel)
 	dummypin = m.Pins["bitOut"]
 	dummypin.Id = 3
 	dummypin.SourceName = "demodulate"
@@ -581,7 +584,7 @@ func (m *Modem) InitPins() {
 	dummypin.CreateChannel()
 
 	m.Pins["bitOut"] = dummypin
-	// fmt.Printf("\n %v : PinO : %v , Channel : %v", m.Name(), m.Pins["bitOut"].Name, m.Pins["bitOut"].Channel)
+	// fmt.Printf("\n %v : PinO : %v , Channel : %v", m.modetype(), m.Pins["bitOut"].Name, m.Pins["bitOut"].Channel)
 
 }
 

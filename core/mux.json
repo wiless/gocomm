@@ -23,8 +23,7 @@
 "Name":"mux",
 "InPins":["inputPin0"],
 "OutPins":["outputPin0"],
-"Function":"Mux"
-}
+"Function":"Mux"}
 ]
 
 }

@@ -10,10 +10,11 @@ import (
 	"wiless/gocomm/dsp"
 	"wiless/gocomm/sources"
 	"wiless/vlib"
+	"log"
 )
 
 func init() {
-	fmt.Printf("\ncore::MPChannel")
+	log.Println("core::MPChannel")
 }
 
 type ChannelParam struct {

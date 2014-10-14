@@ -17,7 +17,7 @@ import (
 
 var wg sync.WaitGroup
 var BlockSize int
-var NBlocks = 200
+var NBlocks = 1
 
 var snr_ber map[float64]float64
 var snr_block map[float64]float64
@@ -29,7 +29,7 @@ var snr vlib.VectorF
 func main() {
 
 	runtime.GOMAXPROCS(5)
-	BlockSize = 1000 // 20 samples
+	BlockSize = 10 // 20 samples
 	SF := 1
 
 	snr_ber = make(map[float64]float64)
@@ -41,7 +41,7 @@ func main() {
 	hn := vlib.NewOnesF(1)
 	spcode := vlib.NewOnesC(SF)
 	// snr = vlib.VectorF{0, 10, 100}
-	snr = vlib.ToVectorF("0:2:20")
+	snr = vlib.ToVectorF("0:0")
 	fmt.Printf("\nSNR : %v", snr)
 	fmt.Printf("\nhn : %v", hn)
 	linkresult := make(map[float64]float64, 1)
@@ -116,10 +116,11 @@ func SimulateLink(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC, uid int) f
 	mpchannel.InitParam(param)
 
 	var modem core.Modem
-
 	modem.InitializeChip()
-	modem.InitModem(2)
-
+	// fmt.Printf("\nModem Default info is %v", modem.Get())
+	modem.SetName("txmodem")
+	modemsetting := `{"object":"txmodem","objectattributes":{"BitsPerSymbol":2,"ModType":"QPSK"}}`
+	modem.Set(modemsetting)
 	feedback := make(gocomm.Complex128AChannel, 10)
 	mpchannel.SetFeedbackChannel(feedback)
 	modem.SetFeedbackChannel(feedback)

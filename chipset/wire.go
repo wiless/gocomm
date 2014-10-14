@@ -328,7 +328,7 @@ func (w *Wire) PinCopierBitChannel(inch gocomm.BitChannel) {
 	}
 }
 
-func (w *Wire) PinCopierBitAChannel(inch gocomm.BitChannelA) {
+func (w *Wire) PinCopierBitAChannel(inch gocomm.BitAChannel) {
 	Nchanels := w.splits
 	NextSize := 1
 	for cnt := 0; cnt < NextSize; cnt++ {
@@ -336,7 +336,7 @@ func (w *Wire) PinCopierBitAChannel(inch gocomm.BitChannelA) {
 		NextSize = chdataIn.MaxExpected
 		//	fmt.Printf("\n PINCOPIER : %d. %v : READ RAW data = %v", cnt, w.virtualPin[0].Name, chdataIn)
 		for i := 0; i < Nchanels; i++ {
-			sendch := w.virtualPin[i].Channel.(gocomm.BitChannelA)
+			sendch := w.virtualPin[i].Channel.(gocomm.BitAChannel)
 			// sent := true
 			sendch <- chdataIn
 			//		fmt.Printf("\n %d : %s Write to ChannelID : %v ", i, w.virtualPin[i].Name, w.virtualPin[i].Channel)
@@ -397,7 +397,7 @@ func (w *Wire) PinCopier(inch interface{}) {
 		scCH := inch.(gocomm.BitChannel)
 		w.PinCopierBitChannel(scCH)
 	case "BitChannelA":
-		scCH := inch.(gocomm.BitChannelA)
+		scCH := inch.(gocomm.BitAChannel)
 		w.PinCopierBitAChannel(scCH)
 	case "Complex128Channel":
 		scCH := inch.(gocomm.Complex128Channel)

@@ -119,9 +119,9 @@ func (s SFloatObj) GetMaxExpected() int {
 
 type BitChannel chan SBitObj
 
-type BitChannelA chan SBitAObj
+type BitAChannel chan SBitAObj
 type FloatChannel chan SFloatObj
-type FloatChannelA chan SFloatAObj
+type FloatAChannel chan SFloatAObj
 
 type Complex128Channel chan SComplex128Obj
 
@@ -131,15 +131,15 @@ func NewBitChannel() BitChannel {
 	return make(BitChannel, 1)
 }
 
-func NewBitAChannel() BitChannelA {
-	return make(BitChannelA, 1)
+func NewBitAChannel() BitAChannel {
+	return make(BitAChannel, 1)
 }
 func NewFloatChannel() FloatChannel {
 	return make(FloatChannel, 1)
 }
 
-func NewFloatAChannel() FloatChannelA {
-	return make(FloatChannelA, 1)
+func NewFloatAChannel() FloatAChannel {
+	return make(FloatAChannel, 1)
 }
 
 func NewComplex128Channel() Complex128Channel {
@@ -171,7 +171,7 @@ func ChannelDuplexer(InCH Complex128Channel, OutCHA []Complex128Channel) {
 	close(InCH)
 }
 
-func Bit2BitA(InCH BitChannel, OutCH BitChannelA, veclen int) {
+func Bit2BitA(InCH BitChannel, OutCH BitAChannel, veclen int) {
 
 	NextSize := 1
 	var Outobjs SBitAObj

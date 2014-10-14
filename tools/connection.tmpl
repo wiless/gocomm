@@ -1,5 +1,5 @@
 {{.Name}}
 {{ range $element := .Chips}}
         var {{ $element.Name}} {{ $element.Type}}
-
+        {{ $element.Name}}.SetName("{{ $element.Name}}")
 {{ end }}
