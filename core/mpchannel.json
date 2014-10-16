@@ -37,15 +37,13 @@
 "Name":"channel",
 "InPins":["inputPin0"],
 "OutPins":["outputPin0"],
-"Function":"Channel"
-},
+"Function":"Channel"},
 {
 "Id":1,
 "Name":"channelBlock",
 "InPins":["inputPin1"],
 "OutPins":["outputPin1"],
-"Function":"ChannelBlock"
-}
+"Function":"ChannelBlock"}
 ]
 
 }

@@ -98,6 +98,60 @@ func Sink(pin PinInfo) {
 	fmt.Printf("\n======Sink DataOut from Pin %v =========== \n\n", pin)
 	count := 1
 	switch pin.DataType.Name() {
+	case "FloatChannelA":
+		for i := 0; i < count; i++ {
+			// fmt.Printf("\n Status of Channel %d = %#v ", i, pin.Channel)
+			ddata := <-ToFloatACH(pin)
+			// fmt.Printf(" SPECIAL MESSAGE %s", ddata.Message)
+			if ddata.Message == "" {
+				fmt.Printf("\nSinkPin : %s - Read Bit %d = %v ", pin.Name, i, ddata.Ch)
+			} else {
+				fmt.Printf("\nSinkPin : %s - Read Bit %d = %v : %s", pin.Name, i, ddata.Ch, ddata.Message)
+			}
+
+			count = ddata.MaxExpected
+			// ddata := choutData.Ch
+			// max = choutData.MaxExpected
+			// fmt.Printf(" %d %d", uint8(real(ddata)), uint8(imag(ddata)))
+			// fmt.Printf("\n %d @ max Symbols limit  = %d %s ", i, max, choutData.Message)
+
+		}
+	case "FloatChannel":
+		for i := 0; i < count; i++ {
+			// fmt.Printf("\n Status of Channel %d = %#v ", i, pin.Channel)
+			ddata := <-pin.Channel.(gocomm.FloatChannel)
+			// fmt.Printf(" SPECIAL MESSAGE %s", ddata.Message)
+			if ddata.Message == "" {
+				fmt.Printf("\nSinkPin : %s - Read Bit %d = %v ", pin.Name, i, ddata.Ch)
+			} else {
+				fmt.Printf("\nSinkPin : %s - Read Bit %d = %v : %s", pin.Name, i, ddata.Ch, ddata.Message)
+			}
+
+			count = ddata.MaxExpected
+			// ddata := choutData.Ch
+			// max = choutData.MaxExpected
+			// fmt.Printf(" %d %d", uint8(real(ddata)), uint8(imag(ddata)))
+			// fmt.Printf("\n %d @ max Symbols limit  = %d %s ", i, max, choutData.Message)
+
+		}
+	case "BitChannelA":
+		for i := 0; i < count; i++ {
+			// fmt.Printf("\n Status of Channel %d = %#v ", i, pin.Channel)
+			ddata := <-ToBitACH(pin) //pin.Channel.(gocomm.BitChannelA)
+			// fmt.Printf(" SPECIAL MESSAGE %s", ddata.Message)
+			if ddata.Message == "" {
+				fmt.Printf("\nSinkPin : %s - Read Bit %d = %v ", pin.Name, i, ddata.Ch)
+			} else {
+				fmt.Printf("\nSinkPin : %s - Read Bit %d = %v : %s", pin.Name, i, ddata.Ch, ddata.Message)
+			}
+
+			count = ddata.MaxExpected
+			// ddata := choutData.Ch
+			// max = choutData.MaxExpected
+			// fmt.Printf(" %d %d", uint8(real(ddata)), uint8(imag(ddata)))
+			// fmt.Printf("\n %d @ max Symbols limit  = %d %s ", i, max, choutData.Message)
+
+		}
 	case "BitChannel":
 		for i := 0; i < count; i++ {
 			// fmt.Printf("\n Status of Channel %d = %#v ", i, pin.Channel)
@@ -133,6 +187,23 @@ func Sink(pin PinInfo) {
 			// fmt.Printf("\n %d @ max Symbols limit  = %d %s ", i, max, choutData.Message)
 
 		}
+	case "Complex128ChannelA":
+		for i := 0; i < count; i++ {
+			ddata := <-pin.Channel.(gocomm.Complex128AChannel)
+			count = ddata.MaxExpected
+			// fmt.Printf(" SPECIAL MESSAGE %s", ddata.Message)
+			if ddata.Message == "" {
+				fmt.Printf("\nPin : %s - Read Complex (%d of %d)  = %v ", pin.Name, i, count, ddata.Ch)
+			} else {
+				fmt.Printf("\nPin : %s - Read Complex (%d of %d) = %v : %s", pin.Name, i, count, ddata.Ch, ddata.Message)
+			}
+
+			// ddata := choutData.Ch
+			// max = choutData.MaxExpected
+			// fmt.Printf(" %d %d", uint8(real(ddata)), uint8(imag(ddata)))
+			// fmt.Printf("\n %d @ max Symbols limit  = %d %s ", i, max, choutData.Message)
+
+		}
 	default:
 		fmt.Printf("\n Unknown Data type")
 	}
@@ -153,6 +224,12 @@ func ToComplexACH(pin PinInfo) gocomm.Complex128AChannel {
 func ToBitCH(pin PinInfo) gocomm.BitChannel {
 	return pin.Channel.(gocomm.BitChannel)
 }
+func ToBitACH(pin PinInfo) gocomm.BitChannel {
+	return pin.Channel.(gocomm.BitChannel)
+}
 func ToFloatCH(pin PinInfo) gocomm.FloatChannel {
 	return pin.Channel.(gocomm.FloatChannel)
+}
+func ToFloatACH(pin PinInfo) gocomm.FloatAChannel {
+	return pin.Channel.(gocomm.FloatAChannel)
 }

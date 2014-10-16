@@ -37,15 +37,13 @@
 "Name":"estimator",
 "InPins":["inputPin0"],
 "OutPins":["outputPin0"],
-"Function":"Estimator"
-},
+"Function":"Estimator"},
 {
 "Id":1,
 "Name":"ideal",
 "InPins":["inputPin1"],
 "OutPins":["outputPin1"],
-"Function":"Ideal"
-}
+"Function":"Ideal"}
 ]
 
 }
