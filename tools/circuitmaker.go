@@ -27,9 +27,11 @@ type ConnectionObj struct {
 }
 
 type Circuit struct {
-	Name        string
-	Chips       []ChipObj
-	Connections []ConnectionObj
+	Name          string
+	Chips         []ChipObj
+	Connections   []ConnectionObj
+	Nchips        int
+	WriteTestMain bool
 }
 
 var toolspath string
@@ -62,6 +64,9 @@ func main() {
 	var obj Circuit
 
 	json.Unmarshal(bytes, &obj)
+	obj.Name = strings.ToLower(obj.Name)
+	obj.Nchips = len(obj.Chips)
+	obj.WriteTestMain = true
 	fmt.Printf("\n Structure = %+v", obj)
 
 	/// execute template

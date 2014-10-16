@@ -33,9 +33,9 @@ type Chip interface {
 	OutPinCount() int
 	PinByName(string) PinInfo
 	PinByID(int) PinInfo
-	Set(json string)    /// Json formatted parameters for the Chip
-	Get() string        /// returns the JSON formatted parameters of the Chip
-	Commands() []string /// returns the commands recognized by the Chip
+	//Set(json string) /// Json formatted parameters for the Chip
+	//Get() string     /// returns the JSON formatted parameters of the Chip
+	//Commands() []string /// returns the commands recognized by the Chip
 	ModuleByName(string) ModuleInfo
 
 	PinIn(indx int) PinInfo

@@ -8,10 +8,6 @@
                 {
                         "Type": "core.Modem",
                         "Name": "rxmodem"
-                },
-                {
-                        "Type": "core.BitSource",
-                        "Name": "source"
                 }
         ],
         "Connections": [
