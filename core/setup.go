@@ -49,6 +49,7 @@ type setup struct {
 	snr_block1 map[float64]float64
 	snr        vlib.VectorF
 	SF         int
+	Results    string
 }
 
 func NewSetup() *setup {
@@ -120,6 +121,7 @@ func (s *setup) Run() {
 
 	}
 	s.wg.Wait()
+
 	// fmt.Printf("\nSNR : %v", s.snr)
 	// fmt.Printf("\nBER : %v", s.snr_ber)
 	// fmt.Printf("\nhn : %v", hn)

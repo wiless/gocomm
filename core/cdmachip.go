@@ -2,11 +2,11 @@ package core
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"wiless/gocomm"
 	"wiless/gocomm/chipset"
 	"wiless/vlib"
-	"log"
 )
 
 func init() {
@@ -86,8 +86,12 @@ func (m CDMA) SayHello() {
 	fmt.Printf("\n Hi from \n %v", m.Name())
 }
 
+func (m *CDMA) SetName(name string) {
+	m.name = name
+}
+
 func (m CDMA) Name() string {
-	return "CDMA"
+	return m.name
 }
 
 func (m CDMA) IsInitialized() bool {

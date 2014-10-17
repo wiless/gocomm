@@ -6,8 +6,8 @@
                         "Name": "txmodem"
                 },
                 {
-                        "Type": "core.Modem",
-                        "Name": "rxmodem"
+                        "Type": "core.CDMA",
+                        "Name": "txcdma"
                 }
         ],
         "Connections": [

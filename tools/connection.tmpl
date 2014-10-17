@@ -79,7 +79,9 @@ func (s *{{.Name}}) CreateChips() {
 var count int =0
 fmt.Print("Creating chips\n")
 {{ range $element := .Chips}}
-        var {{ $element.Name}} {{ $element.Type}}
+
+		
+        {{ $element.Name}}:=new({{ $element.Type}})
         s.chips[count]={{$element.Name}}
         count=count+1
         {{$element.Name}}.InitializeChip()
