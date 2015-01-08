@@ -3,7 +3,7 @@ package chipset
 import (
 	"fmt"
 	"reflect"
-	"wiless/gocomm"
+	"github.com/wiless/gocomm"
 )
 
 type PinInfo struct {

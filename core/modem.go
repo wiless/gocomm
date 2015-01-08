@@ -5,10 +5,10 @@ import (
 	"log"
 	"math/cmplx"
 	"reflect"
-	"wiless/gocomm"
-	"wiless/gocomm/chipset"
-	"wiless/gocomm/modem"
-	"wiless/vlib"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/gocomm/modem"
+	"github.com/wiless/vlib"
 )
 
 func init() {

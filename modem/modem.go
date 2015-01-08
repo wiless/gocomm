@@ -8,9 +8,9 @@ import (
 	"strconv"
 
 	// "time"
-	"wiless/gocomm"
-	"wiless/gocomm/chipset"
-	"wiless/gocomm/sources"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/gocomm/sources"
 )
 
 type ModemIterface interface {

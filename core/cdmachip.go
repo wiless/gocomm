@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"log"
 	"reflect"
-	"wiless/gocomm"
-	"wiless/gocomm/chipset"
-	"wiless/vlib"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/vlib"
 )
 
 func init() {

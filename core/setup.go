@@ -5,12 +5,12 @@ import (
 	"fmt"
 	"sort"
 	"sync"
-	"wiless/gocomm"
-	"wiless/gocomm/channel"
-	"wiless/gocomm/chipset"
-	"wiless/gocomm/dsp"
-	"wiless/gocomm/sources"
-	"wiless/vlib"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/channel"
+	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/gocomm/dsp"
+	"github.com/wiless/gocomm/sources"
+	"github.com/wiless/vlib"
 )
 
 var setupid string

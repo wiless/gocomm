@@ -5,8 +5,8 @@ import (
 	"math"
 	"math/cmplx"
 	"runtime"
-	"wiless/gocomm"
-	"wiless/vlib"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/vlib"
 )
 
 func Db(linearValue float64) float64 {
