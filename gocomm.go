@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"wiless/vlib"
+	"github.com/wiless/vlib"
 )
 
 var WGroup sync.WaitGroup
