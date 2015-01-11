@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"reflect"
-	"wiless/gocomm"
+	"github.com/wiless/gocomm"
 )
 
 type PinInfo struct {

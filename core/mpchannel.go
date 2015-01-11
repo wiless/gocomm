@@ -2,15 +2,14 @@ package core
 
 import (
 	"fmt"
-	"math/cmplx"
-	"reflect"
-	"strings"
 	"github.com/wiless/gocomm"
 	"github.com/wiless/gocomm/chipset"
 	"github.com/wiless/gocomm/dsp"
 	"github.com/wiless/gocomm/sources"
 	"github.com/wiless/vlib"
 	"log"
+	"math/cmplx"
+	"reflect"
 )
 
 func init() {
@@ -24,6 +23,7 @@ type ChannelParam struct {
 	Coeff        vlib.VectorC
 	Mode         string
 	FilterMemory vlib.VectorC
+	PowerInDBm   float64
 }
 
 func (c *ChannelParam) SetPDP(pdp vlib.VectorF) {
@@ -34,17 +34,31 @@ func (c *ChannelParam) SetPDP(pdp vlib.VectorF) {
 func NewIIDChannel() ChannelParam {
 	var result ChannelParam
 	result.Ts = -1
-	result.Mode = "iid"
+	result.Mode = "IID"
 	result.pdp = vlib.NewOnesF(1)
+	result.Coeff = vlib.NewOnesC(1)
+	return result
+}
+
+func (c *ChannelParam) SetFlatAWGN() {
+
+}
+
+func DefaultChannel() ChannelParam {
+	var result ChannelParam
+	result.Ts = 0
+	result.Mode = "AWGN"
+	result.pdp = vlib.NewOnesF(1)
+	result.PowerInDBm = 0
 	result.Coeff = vlib.NewOnesC(1)
 	return result
 }
 
 func (m *ChannelParam) InitParam(p ChannelParam) {
 	*m = p
-	m.Mode = strings.ToLower(m.Mode)
+
 	if m.Ts == 0 {
-		m.Ts = -1
+		m.Mode = "AWGN"
 	}
 	m.Validate()
 
@@ -52,7 +66,10 @@ func (m *ChannelParam) InitParam(p ChannelParam) {
 func (m *ChannelParam) Validate() {
 
 	if m.Ts == -1 {
-		m.Mode = "iid"
+		m.Mode = "IID"
+	}
+	if m.Ts == 0 {
+		m.Mode = "AWGN"
 	}
 	if m.pdp.Size() == 0 && m.Coeff.Size() == 0 {
 		m.pdp = vlib.NewOnesF(1)
@@ -136,10 +153,6 @@ func (m MPChannel) ModuleByName(mname string) chipset.ModuleInfo {
 
 func (m MPChannel) Module(moduleid int) chipset.ModuleInfo {
 	return m.ModuleByName(m.ModuleNames[moduleid])
-}
-
-func (m MPChannel) SayHello() {
-	fmt.Printf("\n Hi from \n %v", m.Name())
 }
 
 func (m MPChannel) Name() string {
@@ -388,11 +401,13 @@ func (m *MPChannel) updateCoeff(timestamp float64) {
 			for i := 0; i < m.pdp.Size(); i++ {
 				m.Coeff[i] = sources.RandNC(m.pdp[i])
 			}
+
 			m.TimeStamp = timestamp
 			generated = true
 		}
 
 	}
+
 	/// Write new coeff to feedback channel if new was generated
 	if m.FeedbackCH != nil && generated {
 		var chdata gocomm.SComplex128AObj

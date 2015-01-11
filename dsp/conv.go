@@ -2,7 +2,7 @@ package dsp
 
 import (
 	"fmt"
-	"wiless/vlib"
+	"github.com/wiless/vlib"
 )
 
 func Conv(in1, in2 vlib.VectorC) (result vlib.VectorC) {

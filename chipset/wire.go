@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"reflect"
-	"wiless/gocomm"
+	"github.com/wiless/gocomm"
 )
 
 var wireIDCounter int
