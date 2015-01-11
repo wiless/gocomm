@@ -1,12 +1,15 @@
+// Package gocomm provides different channel objects and functionalites related to them
 package gocomm
 
 import (
 	"fmt"
+	"reflect"
 	"sync"
 
-	"wiless/vlib"
+	"github.com/wiless/vlib"
 )
 
+// Possibly to be deprecated
 var WGroup sync.WaitGroup
 
 type ChannelDataStruct interface {
@@ -14,7 +17,7 @@ type ChannelDataStruct interface {
 }
 
 type SBitObj struct {
-	Ch          uint8
+	Ch          uint8 // The uint8 data is here
 	MaxExpected int
 	Message     string
 	Ts          float64
@@ -65,6 +68,8 @@ func (s *SBitObj) Next(sample uint8) {
 	s.Ch = sample
 	s.UpdateTimeStamp()
 }
+
+// Next function sets the sample given in argument and updates the Timestamp
 func (s *SBitAObj) Next(sample []uint8) {
 	s.Ch = sample
 	s.UpdateTimeStamp()
@@ -389,5 +394,27 @@ func Complex2Bits(obj SComplex128Obj) (outobj []SBitObj) {
 	result[1].Ch = uint8(imag(obj.Ch))
 	// fmt.Printf("\n bit encoded received %#v", result)
 	// }
+	return result
+}
+
+type generic interface{}
+
+func ToInt(value generic) (result int) {
+	switch reflect.TypeOf(value).String() {
+	case "float64":
+		return int(value.(float64))
+	case "int":
+		return value.(int)
+	default:
+		return 0
+	}
+
+	fmt.Print("Type is ", reflect.TypeOf(value))
+	sol := int(value.(float64))
+	defer func() {
+		result = 0
+	}()
+
+	fmt.Print("Solution is ", sol)
 	return result
 }

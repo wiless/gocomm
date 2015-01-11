@@ -1,21 +1,59 @@
 package core
 
 import (
+	"encoding/json"
 	"fmt"
 	"log"
 	"math/cmplx"
 	"reflect"
-	"wiless/gocomm"
-	"wiless/gocomm/chipset"
-	"wiless/gocomm/modem"
-	"wiless/vlib"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/gocomm/modem"
+	"github.com/wiless/vlib"
 )
 
 func init() {
 	log.Println("core::Modem")
 }
 
+type modemMeta struct {
+	M    int
+	Type string
+}
+
+/// Default is a BPSK modulator
+func (m *modemMeta) setDefaults() {
+	m.M = 1
+	m.Type = "BPSK"
+}
+
+func (m *modemMeta) update(data map[string]interface{}) {
+	var value interface{}
+
+	value = data["BitsPerSymbol"]
+	if value != nil {
+		gocomm.ToInt(value)
+		m.M = int(value.(float64))
+	}
+
+	value = data["Type"]
+	if value != nil {
+		m.Type = value.(string)
+	}
+
+	// value = data["BitsPerSymbol"]
+	// if value != nil {
+	// 	m.M = int(value.(float64))
+	// }
+
+}
+
+func NewModem() *Modem {
+	return new(Modem)
+}
+
 type Modem struct {
+	modemMeta
 	modem.Modem
 	name          string
 	isInitialized bool
@@ -32,6 +70,30 @@ func (m *Modem) SetFeedbackChannel(feedback gocomm.Complex128AChannel) {
 	m.recentCoeff.Ts = -1
 	m.recentCoeff.TimeStamp = -1
 
+}
+func (m *Modem) SetJson(data []byte) {
+	m.modemMeta.setDefaults()
+	result := chipset.GetMetaInfo(data, m.Name())
+	m.update(result)
+}
+func (m *Modem) Set(data modemMeta) {
+	m.modemMeta = data
+}
+func (m *Modem) GetJson() []byte {
+
+	var obj map[string]interface{}
+	obj = make(map[string]interface{})
+	obj["Object"] = m.Name()
+	obj["ObjectAttributes"] = m.Get()
+	data, err := json.Marshal(m.modemMeta)
+	if err != nil {
+		panic("Modem:Get()- Unable to Marshal Meta")
+	}
+	return data
+}
+
+func (m *Modem) Get() modemMeta {
+	return m.modemMeta
 }
 
 func (m *Modem) InitModem(bitwidth int) {
@@ -53,7 +115,11 @@ func (m Modem) Pin(pid int) chipset.PinInfo {
 }
 
 func (m *Modem) SetName(nameit string) {
+	if nameit == "" {
+		nameit = "Modem"
+	}
 	m.name = nameit
+
 	//fmt.Print(m.Name())
 }
 

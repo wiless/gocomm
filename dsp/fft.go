@@ -2,11 +2,11 @@ package dsp
 
 import (
 	"github.com/mjibson/go-dsp/fft"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/vlib"
 	"math"
 	"math/cmplx"
 	"runtime"
-	"wiless/gocomm"
-	"wiless/vlib"
 )
 
 func Db(linearValue float64) float64 {
@@ -161,4 +161,44 @@ func GoFFTPerK(outputSymbol gocomm.Complex128Channel, inputsamples vlib.VectorC,
 	var data gocomm.SComplex128Obj
 	data.Ch = result
 	outputSymbol <- data
+}
+
+func FFT2(samples vlib.MatrixF, N int) vlib.MatrixC {
+	/// Rowwise fft
+	samplesC := vlib.ToMatrixC(samples)
+	result := FFTMatrixC(samplesC, N)
+	result = result.T()
+	result = FFTMatrixC(result, N)
+	result.Scale(1.0 / float64(N))
+
+	return result
+}
+
+func FFTMatrixC(samples vlib.MatrixC, N int) vlib.MatrixC {
+
+	// bigMatrixC := vlib.NewMatrixC(N, N)
+	///
+	///
+	// rows := bigmatrix.NRows()
+	rows := samples.NRows()
+	if samples.NRows() > N {
+		rows = N
+	}
+
+	result := vlib.NewMatrixC(N, N)
+	dopad := (N > samples.NCols())
+	for i := 0; i < rows; i++ {
+		rowval := samples.GetRow(i)
+		if dopad {
+			rowval.Resize(N)
+		}
+		result[i] = ExtFFT_C(rowval, N)
+	}
+
+	return result
+}
+
+func FFTmatrixF(samples vlib.MatrixF, N int) vlib.MatrixC {
+	samplesC := vlib.ToMatrixC(samples)
+	return FFTMatrixC(samplesC, N)
 }

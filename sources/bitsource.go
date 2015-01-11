@@ -7,8 +7,8 @@ import (
 	"math/rand"
 	"reflect"
 	"strconv"
-	"wiless/gocomm"
-	"wiless/gocomm/chipset"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/chipset"
 )
 
 type Source struct {

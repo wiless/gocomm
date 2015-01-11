@@ -3,14 +3,15 @@ package core
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"sort"
 	"sync"
-	"wiless/gocomm"
-	"wiless/gocomm/channel"
-	"wiless/gocomm/chipset"
-	"wiless/gocomm/dsp"
-	"wiless/gocomm/sources"
-	"wiless/vlib"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/channel"
+	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/gocomm/dsp"
+	"github.com/wiless/gocomm/sources"
+	"github.com/wiless/vlib"
 )
 
 var setupid string
@@ -120,11 +121,14 @@ func (s *setup) Run() {
 		// go s.SimulateLinkFn(snr[i]-2, hn, spcode, outCH1[i], 1)
 
 	}
+
 	s.wg.Wait()
 
-	// fmt.Printf("\nSNR : %v", s.snr)
-	// fmt.Printf("\nBER : %v", s.snr_ber)
-	// fmt.Printf("\nhn : %v", hn)
+	log.Printf("\nSNR : %v", s.snr)
+	log.Printf("\nBER : %v", s.snr_ber)
+	log.Printf("\nhn : %v", hn)
+	s.Results = string(Print(s.snr_ber, "", ""))
+	log.Printf("Result %v", s.Results)
 }
 
 func (s *setup) SimulateLinkFn(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC, outCH gocomm.FloatChannel, uid int) {
@@ -296,7 +300,7 @@ func (s *setup) SimulateLink(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC,
 //for key, value := range m {
 //    fmt.Println("Key:", key, "Value:", value)
 //}
-func Print(xyvec map[float64]float64, xlabel string, ylabel string) {
+func Print(xyvec map[float64]float64, xlabel string, ylabel string) []byte {
 	x := vlib.NewVectorF(len(xyvec))
 	y := vlib.NewVectorF(len(xyvec))
 	cnt := 0
@@ -310,9 +314,20 @@ func Print(xyvec map[float64]float64, xlabel string, ylabel string) {
 	for indx, vx := range x {
 		y[indx] = xyvec[vx]
 	}
-
+	type temp struct {
+		SNR vlib.VectorF
+		BER vlib.VectorF
+	}
+	data := temp{x, y}
 	//keys := []float64(x)
 	fmt.Printf("\n%s=%1.2e\n %s=%1.2e", xlabel, x, ylabel, y)
+	result, err := json.Marshal(data)
+	if err != nil {
+		return nil
+	} else {
+		return result
+	}
+
 	//fmt.Printf("\n%s=%f", xlabel, x)
 	//fmt.Printf("\n%s=%f", ylabel, y)
 }

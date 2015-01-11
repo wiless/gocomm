@@ -1,6 +1,7 @@
 package chipset
 
 import (
+	"encoding/json"
 	"fmt"
 	"reflect"
 	"wiless/gocomm"
@@ -15,6 +16,29 @@ type PinInfo struct {
 	NonBlocking bool
 	Channel     interface{}
 	SourceName  string
+}
+type varStruct struct {
+	ObjectName       string
+	ObjectAttributes map[string]interface{}
+}
+
+func GetMetaInfo(data []byte, objname string) map[string]interface{} {
+	var resultArray []varStruct
+	err := json.Unmarshal(data, &resultArray)
+	if err != nil {
+		fmt.Print("Error Unmarshalling array", err)
+	}
+	// fmt.Print("\nElement ", resultArray)
+	var result map[string]interface{}
+
+	for _, elem := range resultArray {
+		// fmt.Print("\nElement ", indx, elem)
+		if elem.ObjectName == objname {
+			result = elem.ObjectAttributes
+			return result
+		}
+	}
+	return result /// empty attribs
 }
 
 type ModuleInfo struct {
@@ -33,8 +57,8 @@ type Chip interface {
 	OutPinCount() int
 	PinByName(string) PinInfo
 	PinByID(int) PinInfo
-	//Set(json string) /// Json formatted parameters for the Chip
-	//Get() string     /// returns the JSON formatted parameters of the Chip
+	SetJson(json []byte) /// Json formatted parameters for the Chip
+	GetJson() []byte     /// returns the JSON formatted parameters of the Chip
 	//Commands() []string /// returns the commands recognized by the Chip
 	ModuleByName(string) ModuleInfo
 
