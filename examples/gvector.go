@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 	"reflect"
-	"wiless/gocomm/modem"
-	"wiless/vlib"
+	"github.com/wiless/gocomm/modem"
+	"github.com/wiless/vlib"
 )
 
 func main() {

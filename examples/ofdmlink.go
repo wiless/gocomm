@@ -3,10 +3,10 @@ package main
 import (
 	"fmt"
 	"time"
-	"wiless/gocomm"
-	"wiless/gocomm/customchips"
-	// "wiless/gocomm/dsp"
-	"wiless/gocomm/sources"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/customchips"
+	// "github.com/wiless/gocomm/dsp"
+	"github.com/wiless/gocomm/sources"
 )
 
 func main() {

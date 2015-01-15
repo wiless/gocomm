@@ -9,16 +9,16 @@ import (
 	"net"
 	"strconv"
 	"time"
-	// "wiless/gocmm"
+	// "github.com/wiless/gocmm"
 	"reflect"
-	"wiless/gocomm"
+	"github.com/wiless/gocomm"
 
-	// "wiless/gocomm/cdma"
-	"wiless/gocomm/channel"
-	"wiless/gocomm/chipset"
-	"wiless/gocomm/modem"
-	"wiless/gocomm/sink"
-	"wiless/gocomm/sources"
+	// "github.com/wiless/gocomm/cdma"
+	"github.com/wiless/gocomm/channel"
+	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/gocomm/modem"
+	"github.com/wiless/gocomm/sink"
+	"github.com/wiless/gocomm/sources"
 )
 
 var N int

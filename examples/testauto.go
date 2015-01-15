@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"wiless/gocomm/chipset"
-	"wiless/gocomm/customchips"
+	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/gocomm/customchips"
 )
 
 func main() {

@@ -8,11 +8,11 @@ import (
 	// "github.com/gonum/stat"
 
 	"time"
-	"wiless/gocomm/dsp"
+	"github.com/wiless/gocomm/dsp"
 
 	"github.com/mjibson/go-dsp/fft"
-	"wiless/gocomm/sources"
-	"wiless/vlib"
+	"github.com/wiless/gocomm/sources"
+	"github.com/wiless/vlib"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 	fmt.Printf("\n Vanilla Elapsed : %v", time.Since(t1).String())
 	fmt.Printf("\n y1=%f", y[0])
 
-	fmt.Print("\n\n===== wiless/gocomm/fft ========== \n\n")
+	fmt.Print("\n\n===== github.com/wiless/gocomm/fft ========== \n\n")
 	t2 := time.Now()
 	fmt.Printf("\n Start : %v", t2)
 	y = gocomm.GoFFT_C(vlib.VectorC(x), NFFT)

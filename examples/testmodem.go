@@ -6,9 +6,9 @@ import (
 
 	// "strconv"
 	"time"
-	"wiless/gocomm"
-	"wiless/gocomm/sources"
-	"wiless/vlib"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/sources"
+	"github.com/wiless/vlib"
 )
 
 func main() {

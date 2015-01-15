@@ -9,11 +9,11 @@ import (
 	// "strings"
 	// "text/template"
 	"time"
-	"wiless/gocomm/channel"
-	"wiless/gocomm/chipset"
-	"wiless/gocomm/modem"
-	// "wiless/gocomm/sink"
-	"wiless/gocomm/sources"
+	"github.com/wiless/gocomm/channel"
+	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/gocomm/modem"
+	// "github.com/wiless/gocomm/sink"
+	"github.com/wiless/gocomm/sources"
 )
 
 func CreateChipFrom(chipname string, nameit string) chipset.Chip {

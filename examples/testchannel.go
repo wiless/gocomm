@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
-	"wiless/gocomm"
-	"wiless/gocomm/core"
-	// "wiless/gocomm/sources"
-	"wiless/vlib"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/core"
+	// "github.com/wiless/gocomm/sources"
+	"github.com/wiless/vlib"
 )
 
 func main() {

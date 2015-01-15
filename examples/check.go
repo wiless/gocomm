@@ -2,8 +2,8 @@ package customchips
 
 import (
 	"fmt"
-	"wiless/gocomm"
-	"wiless/gocomm/chipset"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/chipset"
 )
 
 func (m *SampleChip) SayDemodulate(symbolIn gocomm.Complex128Channel,) {

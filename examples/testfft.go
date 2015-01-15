@@ -4,10 +4,10 @@ import (
 	"fmt"
 	// "math"
 	// "github.com/gonum/stat"
-	"wiless/gocomm/funcs"
-	"wiless/gocomm/modem"
-	"wiless/gocomm/sources"
-	// "wiless/vlib"
+	"github.com/wiless/gocomm/funcs"
+	"github.com/wiless/gocomm/modem"
+	"github.com/wiless/gocomm/sources"
+	// "github.com/wiless/vlib"
 )
 
 func main() {
