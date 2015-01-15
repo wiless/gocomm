@@ -9,9 +9,9 @@ import (
 	"strings"
 	"text/template"
 	"time"
-	// "wiless/gocomm/chipset"
+	// "github.com/wiless/gocomm/chipset"
 	"runtime"
-	// "wiless/gocomm/core"
+	// "github.com/wiless/gocomm/core"
 )
 
 type ChipObj struct {

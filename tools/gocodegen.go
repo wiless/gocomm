@@ -10,7 +10,7 @@ import (
 	"strings"
 	"text/template"
 	"time"
-	"wiless/gocomm/chipset"
+	"github.com/wiless/gocomm/chipset"
 )
 
 var N int

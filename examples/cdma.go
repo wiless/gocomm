@@ -31,9 +31,7 @@ func main() {
 	for i := 0; i < N; i++ {
 		data.Next(samples[i])
 		chips := cdma.SpreadFn(data)
-
 		output := cdma.DeSpreadFn(chips)
-
 		fmt.Printf("\nTxSymbol %v ", data)
 		// fmt.Printf("\nTx %v ", chips)
 		fmt.Printf("\nRxSymbol %v ", output)
