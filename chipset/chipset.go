@@ -3,8 +3,8 @@ package chipset
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
 	"github.com/wiless/gocomm"
+	"reflect"
 )
 
 type PinInfo struct {
@@ -14,7 +14,7 @@ type PinInfo struct {
 	DataType    reflect.Type
 	InputPin    bool
 	NonBlocking bool
-	Channel     interface{}
+	Channel     interface{} `json:"-"`
 	SourceName  string
 }
 type varStruct struct {

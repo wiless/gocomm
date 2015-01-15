@@ -4,11 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"log"
-	"reflect"
 	"github.com/wiless/gocomm"
 	"github.com/wiless/gocomm/chipset"
 	"github.com/wiless/vlib"
+	"log"
+	"reflect"
 )
 
 func init() {
@@ -78,8 +78,8 @@ type CDMA struct {
 	isInitialized bool
 	Pins          map[string]chipset.PinInfo
 	Modules       map[string]chipset.ModuleInfo
-	ModuleNames   map[int]string
-	PinNames      map[int]string
+	ModuleNames   map[int]string `json:"-"`
+	PinNames      map[int]string `json:"-"`
 }
 
 func (m *CDMA) SetJson(data []byte) {
