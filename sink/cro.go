@@ -8,12 +8,12 @@ import (
 	"strings"
 	// "strconv"
 	"time"
-	"wiless/gocomm"
-	"wiless/gocomm/chipset"
-	// "wiless/gocmm"
-	// "wiless/gocomm"
-	// "wiless/gocomm/cdma"
-	// "wiless/gocomm/modem"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/chipset"
+	// "github.com/wiless/gocmm"
+	// "github.com/wiless/gocomm"
+	// "github.com/wiless/gocomm/cdma"
+	// "github.com/wiless/gocomm/modem"
 )
 
 type Metric struct {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/wiless/gocomm"
 	"github.com/wiless/gocomm/core"
-	// "github.com/wiless/gocomm/sources"
+	// "github.com/github.com/wiless/gocomm/sources"
 	"github.com/wiless/vlib"
 )
 

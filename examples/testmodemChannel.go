@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/wiless/gocomm/core"
 	"math/rand"
-	// "github.com/wiless/gocomm"
+	// "github.com/github.com/wiless/gocomm"
 	"github.com/wiless/gocomm/sources"
 	"github.com/wiless/vlib"
 	"time"

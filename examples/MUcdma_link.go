@@ -1,18 +1,71 @@
-package core
+package main
 
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"sort"
-	"sync"
 	"github.com/wiless/gocomm"
 	"github.com/wiless/gocomm/channel"
 	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/gocomm/core"
 	"github.com/wiless/gocomm/dsp"
 	"github.com/wiless/gocomm/sources"
 	"github.com/wiless/vlib"
+	"io/ioutil"
+	"log"
+	"runtime"
+	"sort"
+	"sync"
+	"time"
 )
+
+func main() {
+
+	fmt.Print("GOPROCS:=", runtime.GOMAXPROCS(8))
+	runtime.SetCPUProfileRate(-1)
+	start := time.Now()
+
+	user1 := NewSetup()
+	user2 := NewSetup()
+	// user3 := NewSetup()
+	// user4 := NewSetup()
+	// user5 := NewSetup()
+	// fmt.Printf("\nLink %v", user1)
+	// fmt.Printf("\nLink %v", user2)
+	data, err := ioutil.ReadFile("settings.json")
+	if err != nil {
+		log.Print("Unable to Read File : ", err)
+	}
+	result := chipset.GetMetaInfo(data, "Modem1")
+	fmt.Print("Found Setting : ", result, "len = ", len(result))
+	var jsons string = `{"NBlocks":100,"snr":"0:2:16","SF":1}`
+	var mymodem core.Modem
+	mymodem.SetName("Modem2")
+	mymodem.SetJson(data)
+
+	fmt.Print("SOMETHING", string(mymodem.GetJson()))
+	user1.Set(jsons)
+	user2.Set(jsons)
+	// user3.Set(jsons)
+	// user4.Set(jsons)
+	// user5.Set(jsons)
+	fmt.Printf("Starting simulation ...")
+
+	go user1.Run()
+	// go user2.Run()
+	// go user3.Run()
+	// go user4.Run()
+
+	// 	user1.Run()
+	// 	user2.Run()
+	// 	user3.Run()
+	// 	user4.Run()
+	fmt.Printf("\n started user 2")
+	user2.Run()
+
+	// time.Sleep(10 * time.Second)
+	fmt.Print("\n Elapsed : ", time.Since(start))
+
+}
 
 var setupid string
 
@@ -145,22 +198,22 @@ func (s *setup) SimulateLinkFn(SNR float64, pdp vlib.VectorF, spcode vlib.Vector
 	s.wg.Done()
 }
 func (s *setup) SimulateLink(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC, uid int) float64 {
-	var cdma CDMA
+	var cdma core.CDMA
 	bitTs := 1.0
 	cdma.InitializeChip()
 
 	cdma.SetSpreadCode(spcode, true)
-	var mpchannel MPChannel
+	var mpchannel core.MPChannel
 	mpchannel.InitializeChip()
 	///
-	param := NewIIDChannel()
+	param := core.NewIIDChannel()
 	param.SetPDP(pdp)
 	param.Mode = "iid"
 	symbolTs := 2 * bitTs
 	param.Ts = 5 * symbolTs // bitTs // dataArray.Ts * float64(BlockSize)
 	mpchannel.InitParam(param)
 
-	var modem Modem
+	var modem core.Modem
 
 	modem.InitializeChip()
 	modem.InitModem(2)
@@ -226,7 +279,7 @@ func (s *setup) SimulateLink(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC,
 	// go gocomm.SinkComplex(ch4, "")
 	// ///
 	// bitsample
-	var BER BER
+	var BER core.BER
 	BER.TrueBits = bitsample
 	BER.InitializeChip()
 	ch6 := gocomm.NewBitChannel()
@@ -279,27 +332,6 @@ func (s *setup) SimulateLink(SNR float64, pdp vlib.VectorF, spcode vlib.VectorC,
 	return result
 }
 
-// func (s *setup) updateTable() {
-
-// 	// fmt.Printf("\r === ADB === %v", snr_ber[0])
-// 	str := ""
-// 	str1 := ""
-// 	for i := 0; i < len(s.snr); i++ {
-// 		blocks := s.snr_block[s.snr[i]] + 1
-// 		blocks1 := s.snr_block1[s.snr[i]-2] + 1
-// 		// str += fmt.Sprintf("%2.2e (%d) ", snr_ber[snr[i]]/blocks, int(s.snr_block[snr[i]])+1)
-// 		str += fmt.Sprintf("%2.2e ", s.snr_ber[s.snr[i]]/blocks)
-// 		str1 += fmt.Sprintf("%2.2e ", s.snr_ber1[s.snr[i]]/blocks1)
-// 	}
-// 	fmt.Printf("\r BER(block) : %s \t %s", str, str1)
-
-// }
-
-//type xyvec map[float64]float64
-
-//for key, value := range m {
-//    fmt.Println("Key:", key, "Value:", value)
-//}
 func Print(xyvec map[float64]float64, xlabel string, ylabel string) []byte {
 	x := vlib.NewVectorF(len(xyvec))
 	y := vlib.NewVectorF(len(xyvec))
