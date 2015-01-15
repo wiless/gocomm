@@ -298,6 +298,7 @@ func (m *Modem) DemodSymbolCH(index int, rxsymbolchIn chan complex128, detBitsCh
 
 }
 
+// wordlength=size of the constellation, modetype does not matter
 func (m *Modem) Init(wordlength int, modetype string) {
 	m.bitsPerSymbol = wordlength
 	m.modetype = modetype

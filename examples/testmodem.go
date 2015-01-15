@@ -2,13 +2,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/wiless/gocomm/modem"
 	"math/rand"
 
 	// "strconv"
-	"time"
-	"github.com/wiless/gocomm"
+
 	"github.com/wiless/gocomm/sources"
 	"github.com/wiless/vlib"
+
+	"time"
 )
 
 func main() {
@@ -24,7 +26,8 @@ func main() {
 	bits2 := vlib.NewOnesB(10)
 
 	fmt.Print("\nRandBits  = ", sources.Randsrc(N, 2))
-	fmt.Print("\nRandNoise  = ", sources.Noise(N, 1))
+
+	fmt.Print("\nRandNoise  = ", sources.RandNCVec(N, 1))
 	// msg := sources.RandChars(N)
 	msg := sources.RandReadableChars(N)
 	strmsg := string(msg)
@@ -38,15 +41,16 @@ func main() {
 	fmt.Printf("\nBits  : %v", bits2)
 	fmt.Printf("\nBits  : %v ", bits3)
 
-	bpskModem := new(gocomm.Modem)
-	bpskModem.Init(1)
+	bpskModem := modem.NewModem(1, "BPSK")
+	// bpskModem.Init(1)
 	fmt.Printf("\n%v", bpskModem)
 	fmt.Printf("\n%f", bpskModem.Constellation)
 
 	print("\n") // Legacy
+	// qpskModem := modem.NewModem(2, "QPSK")
 
-	qpskModem := new(gocomm.Modem)
-	qpskModem.Init(2)
+	qpskModem := new(modem.Modem)
+	qpskModem.Init(2, "QPSK")
 	fmt.Printf("\n%v", qpskModem)
 	fmt.Printf("\n%f", qpskModem.Constellation)
 	qpskModem.ModulateBits(bits2)
