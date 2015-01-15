@@ -2,10 +2,10 @@ package customchips
 
 import (
 	"fmt"
+	"github.com/wiless/gocomm"
+	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/gocomm/dsp"
 	"reflect"
-	"wiless/gocomm"
-	"wiless/gocomm/chipset"
-	"wiless/gocomm/dsp"
 )
 
 func init() {

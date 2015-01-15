@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
+	"github.com/wiless/gocomm/core"
 	"math/rand"
-
-	"time"
-	"github.com/wiless/gocomm"
+	// "github.com/wiless/gocomm"
 	"github.com/wiless/gocomm/sources"
 	"github.com/wiless/vlib"
+	"time"
 )
 
 func main() {
@@ -20,9 +20,9 @@ func main() {
 	var N0 float64 = 1.0 / 10
 	txbits := vlib.VectorB(sources.RandB(N))
 
-	qpskModem := new(gocomm.Modem)
+	qpskModem := new(core.Modem)
 	var BitsPerSymbol = 2
-	qpskModem.Init(BitsPerSymbol)
+	qpskModem.Init(BitsPerSymbol, "")
 	fmt.Printf("\n%v", qpskModem)
 
 	/// Take every N-bit and push to modem-channel-demod

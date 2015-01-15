@@ -1,11 +1,13 @@
 package SS
 
 import (
+
 	// "fmt"
 	// "log"
 	"math/cmplx"
-	"wiless/gocomm"
-	"wiless/vlib"
+
+	"github.com/wiless/gocomm"
+	"github.com/wiless/vlib"
 )
 
 type CDMA struct {
@@ -43,10 +45,10 @@ func (cdma *CDMA) DeSpreadBlock(expectedInputSize int, chInway gocomm.Complex128
 	for cnt := 0; cnt < expectedInputSize; {
 
 		data := <-chInway
-		rxlen := len(data)
+		rxlen := len(data.Ch)
 		// log.Printf("\n Received %d samples out of %d/%d ", rxlen, cnt, expectedInputSize)
 		cnt += rxlen
-		recentBuffer = append(recentBuffer, data...)
+		recentBuffer = append(recentBuffer, data.Ch...)
 		for {
 			if recentBuffer.Size() < SF {
 
@@ -57,7 +59,9 @@ func (cdma *CDMA) DeSpreadBlock(expectedInputSize int, chInway gocomm.Complex128
 				rxchips := recentBuffer[0:SF]
 				recentBuffer = recentBuffer[SF:]
 				rxsymbols := vlib.DotC(despcode, rxchips)
-				OutCH <- rxsymbols
+				var chdataOut gocomm.SComplex128Obj
+				chdataOut.Ch = rxsymbols
+				OutCH <- chdataOut
 
 			}
 		}
@@ -71,10 +75,12 @@ func (cdma *CDMA) DeSpread(InCH gocomm.Complex128Channel, OutCH gocomm.Complex12
 	despcode := vlib.Conj(cdma.SpreadSequence)
 	var result complex128
 	for i := 0; i < len(despcode); i++ {
-		rxchips := <-InCH
+		rxchips := (<-InCH).Ch
 		result += rxchips * cmplx.Conj(despcode[i])
 	}
-	OutCH <- result
+	var chdataOut gocomm.SComplex128Obj
+	chdataOut.Ch = result
+	OutCH <- chdataOut
 }
 
 func (cdma *CDMA) SpreadBlock(expectedInputSymbols int, chInway gocomm.Complex128Channel, OutCH gocomm.Complex128AChannel) {
@@ -85,23 +91,31 @@ func (cdma *CDMA) SpreadBlock(expectedInputSymbols int, chInway gocomm.Complex12
 	}
 	for i := 0; i < expectedInputSymbols; i++ {
 
-		insymbol := <-chInway
+		indata := <-chInway
+		insymbol := indata.Ch
 		var result = make([]complex128, len(spcode))
 		for i := 0; i < len(spcode); i++ {
 			result[i] = insymbol * spcode[i]
 		}
-		OutCH <- result
+		var chdataOut gocomm.SComplex128AObj
+		chdataOut.Ch = result
+		OutCH <- chdataOut
 	}
 	close(chInway)
 }
 
 func (cdma *CDMA) Spread(chInway gocomm.Complex128Channel, OutCH gocomm.Complex128AChannel) {
 
-	insymbol := <-chInway
+	indata := <-chInway
+	insymbol := indata.Ch
 	spcode := cdma.SpreadSequence
 	var result = make([]complex128, len(spcode))
 	for i := 0; i < len(spcode); i++ {
 		result[i] = insymbol * spcode[i]
 	}
-	OutCH <- result
+	var chdataOut gocomm.SComplex128AObj
+	chdataOut.Ch = result
+	chdataOut.MaxExpected = indata.MaxExpected / len(spcode)
+	// chdataOut.MaxExpected = int(math.Floor(float64(indata.MaxExpected) / float64(len(spcode))))
+	OutCH <- chdataOut
 }

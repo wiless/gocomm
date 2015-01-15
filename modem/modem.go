@@ -44,8 +44,9 @@ func (m *Modem) BitsPerSymbol() int {
 
 }
 
-func NewModem(size int, modeType string) Modem {
+func NewModem(size int) Modem {
 	var result Modem
+	modeType := ""
 	result.Init(size, modeType)
 	result.InitializeChip()
 	return result

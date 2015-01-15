@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/wiless/gocomm/modem"
+	"github.com/wiless/gocomm/core"
 	"math/rand"
 
 	// "strconv"
@@ -41,7 +41,7 @@ func main() {
 	fmt.Printf("\nBits  : %v", bits2)
 	fmt.Printf("\nBits  : %v ", bits3)
 
-	bpskModem := modem.NewModem(1, "BPSK")
+	bpskModem := core.NewModem()
 	// bpskModem.Init(1)
 	fmt.Printf("\n%v", bpskModem)
 	fmt.Printf("\n%f", bpskModem.Constellation)
@@ -49,7 +49,7 @@ func main() {
 	print("\n") // Legacy
 	// qpskModem := modem.NewModem(2, "QPSK")
 
-	qpskModem := new(modem.Modem)
+	qpskModem := new(core.Modem)
 	qpskModem.Init(2, "QPSK")
 	fmt.Printf("\n%v", qpskModem)
 	fmt.Printf("\n%f", qpskModem.Constellation)

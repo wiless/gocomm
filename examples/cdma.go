@@ -3,9 +3,10 @@ package main
 import (
 	"fmt"
 	"time"
+
 	"github.com/wiless/gocomm"
 
-	"github.com/wiless/gocomm/customchips"
+	"github.com/wiless/gocomm/core"
 	"github.com/wiless/gocomm/sources"
 	"github.com/wiless/vlib"
 )
@@ -16,9 +17,9 @@ func main() {
 	L := 4  /// 5tap channel
 	begin := time.Now()
 
-	var cdma customchips.CDMA
+	var cdma core.CDMA
 	cdma.InitializeChip()
-	cdma.SetSpreadCode(vlib.NewOnesC(L))
+	cdma.SetSpreadCode(vlib.NewOnesC(L), true)
 
 	samples := vlib.VectorC(sources.RandNCVec(N, 1))
 	var data gocomm.SComplex128Obj

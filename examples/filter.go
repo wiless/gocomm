@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"time"
 	"github.com/wiless/gocomm"
+	"time"
 	// "github.com/wiless/gocomm/chipset"
 	"github.com/wiless/gocomm/customchips"
 	"github.com/wiless/gocomm/sources"
