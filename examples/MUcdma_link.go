@@ -20,13 +20,13 @@ import (
 
 func main() {
 
-	fmt.Print("GOPROCS:=", runtime.GOMAXPROCS(8))
+	fmt.Print("GOPROCS:=", runtime.GOMAXPROCS(6))
 	runtime.SetCPUProfileRate(-1)
 	start := time.Now()
 
 	user1 := NewSetup()
 	user2 := NewSetup()
-	// user3 := NewSetup()
+	user3 := NewSetup()
 	// user4 := NewSetup()
 	// user5 := NewSetup()
 	// fmt.Printf("\nLink %v", user1)
@@ -45,13 +45,16 @@ func main() {
 	fmt.Print("SOMETHING", string(mymodem.GetJson()))
 	user1.Set(jsons)
 	user2.Set(jsons)
+	user3.Set(jsons)
 	// user3.Set(jsons)
 	// user4.Set(jsons)
 	// user5.Set(jsons)
 	fmt.Printf("Starting simulation ...")
 
+	fmt.Printf("\n started user 1")
 	go user1.Run()
-	// go user2.Run()
+	fmt.Printf("\n started user 2")
+	go user2.Run()
 	// go user3.Run()
 	// go user4.Run()
 
@@ -59,8 +62,8 @@ func main() {
 	// 	user2.Run()
 	// 	user3.Run()
 	// 	user4.Run()
-	fmt.Printf("\n started user 2")
-	user2.Run()
+	fmt.Printf("\n started user 3")
+	user3.Run()
 
 	// time.Sleep(10 * time.Second)
 	fmt.Print("\n Elapsed : ", time.Since(start))

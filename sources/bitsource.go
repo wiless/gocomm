@@ -2,13 +2,13 @@ package sources
 
 import (
 	"fmt"
-	"math"
-	"math/big"
-	"math/rand"
-	"reflect"
-	"strconv"
 	"github.com/wiless/gocomm"
 	"github.com/wiless/gocomm/chipset"
+	"github.com/wiless/vlib"
+	"math"
+	"math/big"
+	"reflect"
+	"strconv"
 )
 
 type Source struct {
@@ -35,7 +35,7 @@ type BitSource struct {
 
 func (s *BitSource) GenBit(bitChannel gocomm.BitChannel) {
 	// fmt.Printf("\n Writing bits to %v", bitChannel)
-	bits := RandB(s.Size())
+	bits := vlib.RandB(s.Size())
 	// var data gocomm.SBitObj
 	var chdata gocomm.SBitObj
 	chdata.MaxExpected = s.Size()
@@ -64,43 +64,6 @@ func (s *BitSource) GenBit(bitChannel gocomm.BitChannel) {
 	// }
 
 	// fmt.Printf("\n SourceBlock closing..")
-}
-
-func Randsrc(size int, maxvalue int) []int {
-	var result = make([]int, size)
-	for i := 0; i < size; i++ {
-		result[i] = rand.Intn(maxvalue)
-	}
-	return result
-}
-
-func RandB(size int) []uint8 {
-	var result = make([]uint8, size)
-	for i := 0; i < size; i++ {
-		result[i] = uint8(rand.Intn(2))
-	}
-	return result
-}
-
-func RandReadableChars(size int) []uint8 {
-
-	/// 32 to 126
-	var result = make([]uint8, size)
-	var startChar byte = 32
-	for i := 0; i < size; i++ {
-		result[i] = startChar + uint8(rand.Intn(94))
-	}
-	return result
-}
-
-func RandChars(size int) []uint8 {
-	var result = make([]uint8, size)
-
-	for i := 0; i < size; i++ {
-		result[i] = uint8(rand.Intn(256))
-
-	}
-	return result
 }
 
 func (m BitSource) ModuleByName(mname string) chipset.ModuleInfo {
