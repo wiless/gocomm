@@ -41,7 +41,7 @@ type SFloatObj struct {
 }
 
 type SFloatAObj struct {
-	Ch          []float64
+	Ch          vlib.VectorF
 	MaxExpected int
 	Message     string
 	Ts          float64
@@ -57,7 +57,7 @@ type SComplex128Obj struct {
 }
 
 type SComplex128AObj struct {
-	Ch          []complex128
+	Ch          vlib.VectorC
 	MaxExpected int
 	Message     string
 	Ts          float64
