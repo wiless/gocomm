@@ -33,6 +33,13 @@ type VMetric struct {
 	Ts   float64
 }
 
+type VCMetric struct {
+	Name string
+	Val  vlib.VectorC
+	Time float64
+	Ts   float64
+}
+
 type TwoPinProbe struct {
 	inputPin  gocomm.Complex128AChannel
 	outputPin gocomm.Complex128AChannel
@@ -329,6 +336,87 @@ func CROcomplexA(InCH gocomm.Complex128AChannel, labels ...string) {
 		binary.Write(buf, binary.LittleEndian, metric.Ts)              /// 8byte float64
 		binary.Write(buf, binary.LittleEndian, int64(len(metric.Val))) /// x= 8byte LEN Of the following float64 vector
 		binary.Write(buf, binary.LittleEndian, metric.Val)             // x*8bytes
+
+		// fmt.Printf("\n AFTER  Buffer is :%0 x  ", buf.Bytes())
+		// fmt.Printf("\n METRIC  is :%v ", metric)
+
+		// fmt.Fprintf(conn, "%c", str)
+		// fmt.Printf("\n%f %v", real(data), buf.Bytes())
+		// if 2 == 3 {
+		// packetbuf.ReadFrom(buf)
+
+		// if math.Mod(float64(cnt), 20.0) == 0 {
+
+		// if buf.Len() >= 2040 {
+
+		if conn != nil {
+			conn.Write(buf.Bytes())
+			// conn.Write(packetbuf.Bytes())
+			fmt.Printf("\n Sent %f %v bytes", metric.Time, buf.Len())
+		}
+		buf.Reset()
+		// }
+
+		if cnt == (NextSize - 1) {
+			break
+		}
+		// packetbuf.Reset()
+
+		// The sleep is only to allow the slow replot in Qt applicaiton
+		// time.Sleep(2 * time.Millisecond)
+
+	}
+	// }
+
+}
+
+func CROcomplexAScatter(InCH gocomm.Complex128AChannel, labels ...string) {
+
+	var metric VCMetric
+	// metric.Name = fmt.Sprintf("EEEBCCCEEN")
+	if len(labels) == 0 {
+		metric.Name = fmt.Sprintf("EEEBCCCEEN")
+	} else {
+		metric.Name = labels[0]
+		if labels[0] == "" {
+			metric.Name = "PlotCurve1"
+		}
+		if len(metric.Name) > 10 {
+			metric.Name = metric.Name[0:10]
+		} else {
+			metric.Name = metric.Name + strings.Repeat("*", 10-len(metric.Name))
+		}
+	}
+	conn, cerr := net.Dial("udp", "localhost:8080")
+	log.Println(cerr)
+	if cerr != nil {
+		log.Println("CRO:Unable to Dial 192.168.0.24:8080 ", cerr)
+	}
+	var Ts float64 = 0.252
+	NextSize := 1
+	// packetbuf := new(bytes.Buffer)
+	buf := new(bytes.Buffer)
+
+	for cnt := 0; ; cnt++ {
+
+		data := <-InCH
+		NextSize = data.MaxExpected
+
+		// data = temp.Ch
+		metric.Time = float64(cnt) * Ts
+		metric.Val = vlib.VectorC(data.Ch)
+		metric.Ts = Ts
+		// str := strconv.FormatFloat(real(data), 'f', 2, 64)
+
+		// databyte := make([]byte, 1024)
+		// fmt.Printf("Buffer is :%v ", buf)
+
+		// binary.Write(buf, binary.BigEndian, real(data))
+		binary.Write(buf, binary.BigEndian, []byte(metric.Name))       //10bytes
+		binary.Write(buf, binary.LittleEndian, metric.Time)            /// 8byte float64
+		binary.Write(buf, binary.LittleEndian, metric.Ts)              /// 8byte float64
+		binary.Write(buf, binary.LittleEndian, int64(len(metric.Val))) /// x= 8byte LEN Of the following float64 vector
+		binary.Write(buf, binary.LittleEndian, metric.Val)             // x*8*2bytes
 
 		// fmt.Printf("\n AFTER  Buffer is :%0 x  ", buf.Bytes())
 		// fmt.Printf("\n METRIC  is :%v ", metric)
