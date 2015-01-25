@@ -299,7 +299,7 @@ func CROcomplexA(InCH gocomm.Complex128AChannel, labels ...string) {
 			metric.Name = metric.Name + strings.Repeat("*", 10-len(metric.Name))
 		}
 	}
-	conn, cerr := net.Dial("udp", "192.168.0.30:8080")
+	conn, cerr := net.Dial("udp", "localhost:8080")
 	log.Println(cerr)
 	if cerr != nil {
 		log.Println("CRO:Unable to Dial 192.168.0.24:8080 ", cerr)
@@ -324,13 +324,11 @@ func CROcomplexA(InCH gocomm.Complex128AChannel, labels ...string) {
 		// fmt.Printf("Buffer is :%v ", buf)
 
 		// binary.Write(buf, binary.BigEndian, real(data))
-		binary.Write(buf, binary.BigEndian, []byte(metric.Name))
-		// buf.WriteByte('0')
-		// fmt.Printf("\n AFTER name Buffer is :%s ", buf.Bytes())
-		binary.Write(buf, binary.LittleEndian, metric.Time)
-		binary.Write(buf, binary.LittleEndian, metric.Ts)
-		binary.Write(buf, binary.LittleEndian, int64(len(metric.Val)))
-		binary.Write(buf, binary.LittleEndian, metric.Val)
+		binary.Write(buf, binary.BigEndian, []byte(metric.Name))       //10bytes
+		binary.Write(buf, binary.LittleEndian, metric.Time)            /// 8byte float64
+		binary.Write(buf, binary.LittleEndian, metric.Ts)              /// 8byte float64
+		binary.Write(buf, binary.LittleEndian, int64(len(metric.Val))) /// x= 8byte LEN Of the following float64 vector
+		binary.Write(buf, binary.LittleEndian, metric.Val)             // x*8bytes
 
 		// fmt.Printf("\n AFTER  Buffer is :%0 x  ", buf.Bytes())
 		// fmt.Printf("\n METRIC  is :%v ", metric)
@@ -342,15 +340,15 @@ func CROcomplexA(InCH gocomm.Complex128AChannel, labels ...string) {
 
 		// if math.Mod(float64(cnt), 20.0) == 0 {
 
-		if buf.Len() >= 2040 {
+		// if buf.Len() >= 2040 {
 
-			if conn != nil {
-				conn.Write(buf.Bytes())
-				// conn.Write(packetbuf.Bytes())
-				fmt.Printf("\n Sent %f %v bytes", metric.Time, buf.Len())
-			}
-			buf.Reset()
+		if conn != nil {
+			conn.Write(buf.Bytes())
+			// conn.Write(packetbuf.Bytes())
+			fmt.Printf("\n Sent %f %v bytes", metric.Time, buf.Len())
 		}
+		buf.Reset()
+		// }
 
 		if cnt == (NextSize - 1) {
 			break
@@ -358,7 +356,7 @@ func CROcomplexA(InCH gocomm.Complex128AChannel, labels ...string) {
 		// packetbuf.Reset()
 
 		// The sleep is only to allow the slow replot in Qt applicaiton
-		time.Sleep(2 * time.Millisecond)
+		// time.Sleep(2 * time.Millisecond)
 
 	}
 	// }
