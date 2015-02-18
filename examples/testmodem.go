@@ -25,11 +25,11 @@ func main() {
 	var N = 10
 	bits2 := vlib.NewOnesB(10)
 
-	fmt.Print("\nRandBits  = ", sources.Randsrc(N, 2))
+	fmt.Print("\nRandBits  = ", vlib.Randsrc(N, 2))
 
-	fmt.Print("\nRandNoise  = ", sources.RandNCVec(N, 1))
+	fmt.Print("\nRandNoise  = ", vlib.RandNCVec(N, 1))
 	// msg := sources.RandChars(N)
-	msg := sources.RandReadableChars(N)
+	msg := vlib.RandReadableChars(N)
 	strmsg := string(msg)
 	// strmsg = "Hello world, this is a message sent"
 

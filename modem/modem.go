@@ -2,6 +2,7 @@ package modem
 
 import (
 	"fmt"
+	"log"
 	"math"
 	"math/cmplx"
 	"reflect"
@@ -218,6 +219,9 @@ func (m *Modem) Modulate(bitchan gocomm.BitChannel, symbolChannel gocomm.Complex
 
 func (m *Modem) ModulateBits(bits []uint8) []complex128 {
 	length := len(bits)
+	if m.bitsPerSymbol == 0 {
+		log.Panicln("Modem:BitsPerSymbol not set")
+	}
 	slength := length / m.bitsPerSymbol
 	var result = make([]complex128, slength)
 	/// Actual Modulation happens here

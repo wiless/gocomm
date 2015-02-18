@@ -3,13 +3,13 @@ package core
 import (
 	"encoding/json"
 	"fmt"
-	"log"
-	"math/cmplx"
-	"reflect"
 	"github.com/wiless/gocomm"
 	"github.com/wiless/gocomm/chipset"
 	"github.com/wiless/gocomm/modem"
 	"github.com/wiless/vlib"
+	"log"
+	"math/cmplx"
+	"reflect"
 )
 
 func init() {
@@ -74,6 +74,7 @@ func (m *Modem) SetFeedbackChannel(feedback gocomm.Complex128AChannel) {
 func (m *Modem) SetJson(data []byte) {
 	m.modemMeta.setDefaults()
 	result := chipset.GetMetaInfo(data, m.Name())
+	log.Printf("modem setjson %v", result)
 	m.update(result)
 }
 func (m *Modem) Set(data modemMeta) {
@@ -86,6 +87,8 @@ func (m *Modem) GetJson() []byte {
 	obj["Object"] = m.Name()
 	obj["ObjectAttributes"] = m.Get()
 	data, err := json.Marshal(m.modemMeta)
+
+	fmt.Printf("%s", data)
 	if err != nil {
 		panic("Modem:Get()- Unable to Marshal Meta")
 	}

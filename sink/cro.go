@@ -26,7 +26,14 @@ type Metric struct {
 	Ts   float64
 }
 
-type VMetric struct {
+type CMetric struct {
+	Name string
+	Val  complex128
+	Time float64
+	Ts   float64
+}
+
+type VFMetric struct {
 	Name string
 	Val  vlib.VectorF
 	Time float64
@@ -89,7 +96,7 @@ func CRO(scale float64, NextSize int, InCH gocomm.Complex128Channel) {
 
 	var metric Metric
 	metric.Name = fmt.Sprintf("EEEBCCCEEN")
-	conn, _ := net.Dial("udp", "192.168.0.24:8080")
+	conn, _ := net.Dial("udp", "localhost:8080")
 	var Ts float64 = 1.0
 	for cnt := 0; cnt < NextSize; {
 		time.Sleep(10 * time.Millisecond)
@@ -161,7 +168,7 @@ func CROcomplex(InCH gocomm.Complex128Channel, labels ...string) {
 			metric.Name = metric.Name + strings.Repeat("*", 10-len(metric.Name))
 		}
 	}
-	conn, _ := net.Dial("udp", "192.168.0.24:8080")
+	conn, _ := net.Dial("udp", "localhost:8080")
 	var Ts float64 = 0.252
 	NextSize := 1
 	// packetbuf := new(bytes.Buffer)
@@ -291,7 +298,7 @@ func CROremote(InCHPin chipset.PinInfo) {
 
 func CROcomplexA(InCH gocomm.Complex128AChannel, labels ...string) {
 
-	var metric VMetric
+	var metric VFMetric
 	// metric.Name = fmt.Sprintf("EEEBCCCEEN")
 	if len(labels) == 0 {
 		metric.Name = fmt.Sprintf("EEEBCCCEEN")
@@ -309,7 +316,7 @@ func CROcomplexA(InCH gocomm.Complex128AChannel, labels ...string) {
 	conn, cerr := net.Dial("udp", "localhost:8080")
 	log.Println(cerr)
 	if cerr != nil {
-		log.Println("CRO:Unable to Dial 192.168.0.24:8080 ", cerr)
+		log.Println("CRO:Unable to Dial localhost:8080 ", cerr)
 	}
 	var Ts float64 = 0.252
 	NextSize := 1
@@ -375,7 +382,9 @@ func CROcomplexAScatter(InCH gocomm.Complex128AChannel, labels ...string) {
 	var metric VCMetric
 	// metric.Name = fmt.Sprintf("EEEBCCCEEN")
 	if len(labels) == 0 {
-		metric.Name = fmt.Sprintf("EEEBCCCEEN")
+		// metric.Name = fmt.Sprintf("ZZZZZXXXXX")
+		metric.Name = fmt.Sprintf("%s", vlib.RandString(10))
+		//	metric.Name = fmt.Sprintf("AAAAABBBBB")
 	} else {
 		metric.Name = labels[0]
 		if labels[0] == "" {
@@ -390,13 +399,13 @@ func CROcomplexAScatter(InCH gocomm.Complex128AChannel, labels ...string) {
 	conn, cerr := net.Dial("udp", "localhost:8080")
 	log.Println(cerr)
 	if cerr != nil {
-		log.Println("CRO:Unable to Dial 192.168.0.24:8080 ", cerr)
+		log.Println("CRO:Unable to Dial localhost:8080 ", cerr)
 	}
 	var Ts float64 = 0.252
 	NextSize := 1
 	// packetbuf := new(bytes.Buffer)
 	buf := new(bytes.Buffer)
-
+	totalbytes := 0
 	for cnt := 0; ; cnt++ {
 
 		data := <-InCH
@@ -433,7 +442,8 @@ func CROcomplexAScatter(InCH gocomm.Complex128AChannel, labels ...string) {
 		if conn != nil {
 			conn.Write(buf.Bytes())
 			// conn.Write(packetbuf.Bytes())
-			fmt.Printf("\n Sent %f %v bytes", metric.Time, buf.Len())
+			totalbytes += buf.Len()
+			fmt.Printf("\r %s : %d Sent %f %v bytes", metric.Name, cnt, metric.Time, buf.Len())
 		}
 		buf.Reset()
 		// }
@@ -447,6 +457,8 @@ func CROcomplexAScatter(InCH gocomm.Complex128AChannel, labels ...string) {
 		// time.Sleep(2 * time.Millisecond)
 
 	}
+	fmt.Printf("\n Last TimeStamp : %f, TotalBytes = %v bytes", metric.Time, totalbytes)
+
 	// }
 
 }

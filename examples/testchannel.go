@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+
 	"github.com/wiless/gocomm"
 	"github.com/wiless/gocomm/core"
 	// "github.com/github.com/wiless/gocomm/sources"
@@ -26,7 +27,6 @@ func main() {
 	data.Ts = 2
 	for i := 0; i < N; i++ {
 		data.Ch = samples[i]
-
 		// fmt.Printf("\n Input %d = %v", i, data)
 		chout := channel.ChannelFn(data)
 		fmt.Printf("\n  %d I/O : %v ==> %v", i, data.Ch, chout.Ch)
