@@ -285,19 +285,19 @@ func ComplexA2Complex(InCH Complex128AChannel, OutCH Complex128Channel) {
 }
 
 func (s SComplex128Obj) String() string {
-	result := fmt.Sprintf("(%f,%f)\t%% [%d]@%f : %s", s.TimeStamp, s.Ch, s.MaxExpected, s.Ts, s.Message)
+	result := fmt.Sprintf("(%f,%f)\t%% [#%d]@%f : \"%s\"", s.TimeStamp, s.Ch, s.MaxExpected, s.Ts, s.Message)
 	return result
 }
 func (s SComplex128AObj) String() (result string) {
-	result = fmt.Sprintf("(%f,%f)\t%% [%d]@%f : %s\n", s.TimeStamp, s.Ch, s.MaxExpected, s.Ts, s.Message)
+	result = fmt.Sprintf("(%f,%f)\t%% [#%d]@%f : \"%s\"", s.TimeStamp, s.Ch, s.MaxExpected, s.Ts, s.Message)
 	return result
 }
 func (s SBitObj) String() string {
-	result := fmt.Sprintf("(%f,%d)\t%% [%d]@%f : %s", s.TimeStamp, s.Ch, s.MaxExpected, s.Ts, s.Message)
+	result := fmt.Sprintf("(%f,%d)\t%% [#%d]@%f : \"%s\"", s.TimeStamp, s.Ch, s.MaxExpected, s.Ts, s.Message)
 	return result
 }
 func (s SBitAObj) String() (result string) {
-	result = fmt.Sprintf("(%f,%d)\t%% [%d]@%f : %s\n", s.TimeStamp, s.Ch, s.MaxExpected, s.Ts, s.Message)
+	result = fmt.Sprintf("(%f,%d)\t%% [#%d]@%f : \"%s\"", s.TimeStamp, s.Ch, s.MaxExpected, s.Ts, s.Message)
 	return result
 }
 

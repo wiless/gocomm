@@ -317,8 +317,7 @@ func (m *Modem) Init(wordlength int, modetype string) {
 		m.modetype = "8PSK"
 	case 4:
 		m.modetype = "16PSK"
-
-	case 256:
+	case 8:
 		m.modetype = "256QAM"
 
 		n := int64(123)

@@ -66,19 +66,21 @@ def animate(self):
 	#print 'Packet length=',pklen
 	#print 'Header=',header
 	print No_packets
+	print val
 	if not Plot_keys.get(header[0],0) :
 		Plot_keys[header[0]]=len(Plot_keys)+1 
 
 	real=np.array(val[0::2])
 	imag=np.array(val[1::2])
-	#print real,imag
+	# print real,imag
 	symbols=np.vstack((real,imag))
+	print symbols
 	if Plot_keys[header[0]]==1:
 		CRO1.set_offsets(symbols)
 	elif Plot_keys[header[0]]==2:
 		CRO2.set_offsets(symbols)
 	elif Plot_keys[header[0]]==3:
-		CRO3.set_offsets(symbols)
+		CRO3.set_offsets(symbols)\
 	elif Plot_keys[header[0]]==4:
 		CRO4.set_offsets(symbols)
 	return CRO1,CRO2,CRO3,CRO4
