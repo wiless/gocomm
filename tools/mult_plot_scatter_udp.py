@@ -80,7 +80,7 @@ def animate(self):
 	elif Plot_keys[header[0]]==2:
 		CRO2.set_offsets(symbols)
 	elif Plot_keys[header[0]]==3:
-		CRO3.set_offsets(symbols)\
+		CRO3.set_offsets(symbols)
 	elif Plot_keys[header[0]]==4:
 		CRO4.set_offsets(symbols)
 	return CRO1,CRO2,CRO3,CRO4
