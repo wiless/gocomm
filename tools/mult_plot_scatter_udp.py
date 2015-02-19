@@ -25,10 +25,10 @@ for ax in axs.reshape(-1):
 	#for C in CRO:
 	#	C = ax.scatter([],[],s=50)
 
-CRO1=axs[0,0].scatter([], [],s=50,c='green')
+CRO1=axs[0,0].scatter([], [],s=50,c='blue')
 CRO2=axs[0,1].scatter([], [], s=50,c='red')
-CRO3=axs[1,0].scatter([], [], s=50,c='blue')
-CRO4=axs[1,1].scatter([], [], s=50)
+CRO3=axs[1,0].scatter([], [], s=50,c='green')
+CRO4=axs[1,1].scatter([], [], s=50,c='black')
 
 Plot_keys=dict()
 No_packets=dict()
@@ -65,17 +65,15 @@ def animate(self):
 	#print 'Packet number=',packets
 	#print 'Packet length=',pklen
 	#print 'Header=',header
-	# print No_packets
-	# print val
+	print No_packets
 	if not Plot_keys.get(header[0],0) :
 		Plot_keys[header[0]]=len(Plot_keys)+1 
 
 	real=np.array(val[0::2])
 	imag=np.array(val[1::2])
-	# print real,imag
+	#print real,imag
 	symbols=np.vstack((real,imag))
 	symbols=symbols.transpose()
-	# print symbols
 	if Plot_keys[header[0]]==1:
 		CRO1.set_offsets(symbols)
 	elif Plot_keys[header[0]]==2:
@@ -87,4 +85,5 @@ def animate(self):
 	return CRO1,CRO2,CRO3,CRO4
 
 ani = animation.FuncAnimation(fig, animate, frames=300,interval=1,init_func=init,blit=True)
+ani.save('demo_animation.mp4', fps=30, extra_args=['-vcodec', 'libx264'])
 plt.show()
