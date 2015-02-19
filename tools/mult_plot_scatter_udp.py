@@ -25,9 +25,9 @@ for ax in axs.reshape(-1):
 	#for C in CRO:
 	#	C = ax.scatter([],[],s=50)
 
-CRO1=axs[0,0].scatter([], [],s=50)
-CRO2=axs[0,1].scatter([], [], s=50)
-CRO3=axs[1,0].scatter([], [], s=50)
+CRO1=axs[0,0].scatter([], [],s=50,c='green')
+CRO2=axs[0,1].scatter([], [], s=50,c='red')
+CRO3=axs[1,0].scatter([], [], s=50,c='blue')
 CRO4=axs[1,1].scatter([], [], s=50)
 
 Plot_keys=dict()
@@ -65,8 +65,8 @@ def animate(self):
 	#print 'Packet number=',packets
 	#print 'Packet length=',pklen
 	#print 'Header=',header
-	print No_packets
-	print val
+	# print No_packets
+	# print val
 	if not Plot_keys.get(header[0],0) :
 		Plot_keys[header[0]]=len(Plot_keys)+1 
 
@@ -74,7 +74,8 @@ def animate(self):
 	imag=np.array(val[1::2])
 	# print real,imag
 	symbols=np.vstack((real,imag))
-	print symbols
+	symbols=symbols.transpose()
+	# print symbols
 	if Plot_keys[header[0]]==1:
 		CRO1.set_offsets(symbols)
 	elif Plot_keys[header[0]]==2:

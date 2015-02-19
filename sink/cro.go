@@ -19,6 +19,8 @@ import (
 	// "github.com/wiless/gocomm/modem"
 )
 
+var GLOBALADDRESS = "localhost:8080"
+
 type Metric struct {
 	Name string
 	Val  float64
@@ -396,7 +398,7 @@ func CROcomplexAScatter(InCH gocomm.Complex128AChannel, labels ...string) {
 			metric.Name = metric.Name + strings.Repeat("*", 10-len(metric.Name))
 		}
 	}
-	conn, cerr := net.Dial("udp", "localhost:8080")
+	conn, cerr := net.Dial("udp", GLOBALADDRESS)
 	log.Println(cerr)
 	if cerr != nil {
 		log.Println("CRO:Unable to Dial localhost:8080 ", cerr)
